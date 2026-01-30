@@ -16,11 +16,17 @@ const app = {
         setInterval(() => this.checkMyTurn(), 60000);
         
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('Service Worker registered'))
-                .catch(err => console.log('Service Worker registration failed'));
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                registration.unregister();
+                }
+            });
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
+                });
+            }
         }
-
         if (this.data.notificationsEnabled) {
             this.requestNotificationPermission();
         }

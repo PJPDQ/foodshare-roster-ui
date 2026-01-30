@@ -11,10 +11,8 @@ self.addEventListener('install', event => {
       .then(cache => cache.addAll(urlsToCache))
       .catch(err => console.log('Cache failed:', err))
   );
-  // Don't skipWaiting - let user use old version until refresh
 });
 
-// Activate - clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -25,10 +23,8 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  // Don't claim clients immediately
 });
 
-// Fetch - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)

@@ -1,15 +1,26 @@
-const CACHE_NAME = 'foodshare-v3';
+const CACHE_NAME = 'foodshare-v2';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/',
+  '/index.html'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
-      .catch(err => console.log('Cache failed:', err))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      })
   );
 });
 
@@ -23,23 +34,19 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        if (response) {
-          return response;
-        }
-        return fetch(event.request)
-          .catch(() => {
-            // If both fail, return offline fallback (optional)
-            if (event.request.mode === 'navigate') {
-              return caches.match('./index.html');
-            }
-          });
-      })
-  );
+// Background sync for checking turns (optional enhancement)
+self.addEventListener('sync', event => {
+  if (event.tag === 'check-turn') {
+    event.waitUntil(checkTurnAndNotify());
+  }
 });
+
+async function checkTurnAndNotify() {
+  const clients = await self.clients.matchAll();
+  if (clients.length > 0) {
+    clients[0].postMessage({ type: 'CHECK_TURN' });
+  }
+}

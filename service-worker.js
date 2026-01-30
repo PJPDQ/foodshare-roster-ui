@@ -1,29 +1,20 @@
-const CACHE_NAME = 'foodshare-v2';
+const CACHE_NAME = 'foodshare-v3';
 const urlsToCache = [
-  '/',
-  '/index.html'
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
+      .catch(err => console.log('Cache failed:', err))
   );
-  self.skipWaiting();
+  // Don't skipWaiting - let user use old version until refresh
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
-});
-
+// Activate - clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -34,19 +25,25 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  self.clients.claim();
+  // Don't claim clients immediately
 });
 
-// Background sync for checking turns (optional enhancement)
-self.addEventListener('sync', event => {
-  if (event.tag === 'check-turn') {
-    event.waitUntil(checkTurnAndNotify());
-  }
+// Fetch - serve from cache, fallback to network
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached version or fetch from network
+        if (response) {
+          return response;
+        }
+        return fetch(event.request)
+          .catch(() => {
+            // If both fail, return offline fallback (optional)
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
+          });
+      })
+  );
 });
-
-async function checkTurnAndNotify() {
-  const clients = await self.clients.matchAll();
-  if (clients.length > 0) {
-    clients[0].postMessage({ type: 'CHECK_TURN' });
-  }
-}

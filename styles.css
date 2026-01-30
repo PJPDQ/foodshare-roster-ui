@@ -678,3 +678,12 @@ input:checked + .slider:before {
         padding: 14px;
     }
 }
+
+@media (max-width: 968px), (display-mode: standalone), (hover: none) {
+    .main-container {
+        grid-template-columns: 1fr;
+    }
+    .main-container > .panel {
+        grid-column: 1 !important;
+    }
+}

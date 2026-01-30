@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="description" content="Weekly Food Prep & Sharing Roster Management">
+    <title>FoodShare Roster</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FoodShare">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%234f46e5' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Turn Notification Banner -->
+    <div id="turnBanner" class="notification-banner">
+        <span id="turnMessage"></span>
+        <button onclick="this.parentElement.classList.remove('show')" style="margin-left: 1rem; background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">Dismiss</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🍽️ FoodShare Roster</h1>
+            <div class="header-controls">
+                <button class="user-profile-btn" id="userProfileBtn" onclick="app.openUserProfile()">
+                    <span id="userNameDisplay">👤 Set My Name</span>
+                </button>
+                <button class="btn btn-icon" onclick="app.regenerateRoster()" title="Regenerate Roster">🔄</button>
+                <button class="btn" onclick="app.openSettings()">⚙️ Members</button>
+                <button class="btn btn-primary" onclick="app.addWeek()">+ Add Week</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Left Panel: Calendar/List View (75%) -->
+        <div class="panel" style="grid-column: 1;">
+            <div class="panel-header">
+                <div class="panel-title">
+                    📅 Weekly Schedule
+                    <span id="weekCount" style="font-size: 0.875rem; color: var(--text-light); font-weight: normal;">(0 weeks)</span>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="app.setView('calendar')">Calendar</button>
+                    <button class="view-btn" onclick="app.setView('list')">List</button>
+                </div>
+            </div>
+            <div class="panel-body" id="scheduleContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No Schedule Yet</h3>
+                    <p>Add members and generate your first week to get started</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Statistics (25%) -->
+        <div class="panel" style="grid-column: 2;">
+            <div class="panel-header">
+                <div class="panel-title">📊 Statistics</div>
+            </div>
+            <div class="panel-body">
+                <div class="stats-grid" id="statsContainer">
+                    <div class="empty-state" style="padding: 1rem;">
+                        <p>Add members to see statistics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 ROCK GROW-ing Brisbane.</p>
+    </footer>
+
+    <div class="modal" id="userProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">👤 My Profile</div>
+                <button class="close-btn" onclick="app.closeUserProfile()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Select Your Name</label>
+                    <select class="form-select" id="userNameSelect" onchange="app.handleUserNameChange()">
+                        <option value="">-- Select your name --</option>
+                    </select>
+                    <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.5rem;">
+                        Don't see your name? Ask the admin to add you in Members settings.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notifications</label>
+                    <div class="toggle-switch">
+                        <div>
+                            <div class="toggle-label">Enable Notifications</div>
+                            <div class="toggle-description">Get notified when it's your turn</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notificationToggle" onchange="app.toggleNotifications()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p id="notificationStatus" style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem; font-style: italic;">
+                        Notifications are disabled
+                    </p>
+                </div>
+
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                    <strong style="color: #92400e; font-size: 0.875rem;">📱 How it works:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1rem; font-size: 0.875rem; color: #92400e;">
+                        <li>Select your name from the list</li>
+                        <li>Enable notifications</li>
+                        <li>Get alerts when it's your turn to prep or share</li>
+                        <li>We'll check automatically when you open the app</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ Manage Members</div>
+                <button class="close-btn" onclick="app.closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Add New Member</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" class="form-input" id="newMemberName" placeholder="Enter name..." onkeypress="if(event.key==='Enter')app.addMember()">
+                        <button class="btn btn-primary" onclick="app.addMember()">Add</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Current Members (<span id="memberCount">0</span>)</label>
+                    <div class="members-list" id="membersList"></div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <button class="btn" onclick="app.clearData()" style="width: 100%; justify-content: center; background: var(--danger); color: white;">Clear All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

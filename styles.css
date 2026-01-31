@@ -914,7 +914,7 @@ input:checked + .slider:before {
 .welcome-section {
     text-align: center;
     padding: 60px 20px;
-    background: linear-gradient(135deg, var(--coral-red), var(--coral-light));
+    background: linear-gradient(135deg, grey, var(--coral-light));
     border-radius: 1rem;
     margin-bottom: 24px;
     box-shadow: var(--shadow);

@@ -5,7 +5,7 @@ const app = {
         view: 'calendar',
         userName: '',
         notificationsEnabled: false,
-        fixedSharing: [],
+        fixedSharingRotation: [],
         allowSharingEdit: false 
     },
 
@@ -37,7 +37,7 @@ const app = {
         } else {
             console.log(`ELSE saved data`);  
             this.data.members = ['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wilaras', 'Andrew Wijaya', 'Kiki'];
-            this.generateWeeks(this.data.members.length * 2); 
+            this.generateWeeks(this.data.fixedSharingRotation.length); 
         }
         
         // console.log(`END LOAD saved data`);  

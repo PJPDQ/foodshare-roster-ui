@@ -221,8 +221,60 @@ const app = {
         }
     },
 
+    // generateWeeks(count = 1) {
+    //     // Start from beginning of current month
+    //     let targetDate = new Date();
+    //     targetDate.setDate(1);
+    //     targetDate.setHours(0, 0, 0, 0);
+        
+    //     let added = 0;
+    //     let monthsChecked = 0;
+        
+    //     while (added < count && monthsChecked < 24) {
+    //         const year = targetDate.getFullYear();
+    //         const month = targetDate.getMonth();
+            
+    //         // Calculate Week 2 (days 8-14) - find Monday of this week
+    //         const week2 = new Date(year, month, 8);
+    //         while (week2.getDay() !== 1) { // 1 = Monday
+    //             week2.setDate(week2.getDate() + 1);
+    //         }
+            
+    //         // Calculate Week 4 (days 22-28) - find Monday of this week  
+    //         const week4 = new Date(year, month, 22);
+    //         while (week4.getDay() !== 1) { // 1 = Monday
+    //             week4.setDate(week4.getDate() + 1);
+    //         }
+            
+    //         const today = new Date();
+    //         today.setHours(0,0,0,0);
+            
+    //         // Add Week 2 if it's today or future and not exists
+    //         if (week2 >= today && !this.weekExists(week2)) {
+    //             if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week2) {
+    //                 this.createSingleWeek(week2); // Changed from addWeek to createSingleWeek
+    //                 added++;
+    //                 if (added >= count) break;
+    //             }
+    //         }
+            
+    //         // Add Week 4 if it's today or future and not exists
+    //         if (week4 >= today && !this.weekExists(week4) && added < count) {
+    //             if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week4) {
+    //                 this.createSingleWeek(week4); // Changed from addWeek to createSingleWeek
+    //                 added++;
+    //             }
+    //         }
+            
+    //         // Move to next month
+    //         targetDate.setMonth(targetDate.getMonth() + 1);
+    //         monthsChecked++;
+    //     }
+        
+    //     this.saveData();
+    //     this.render();
+    // },
     generateWeeks(count = 1) {
-        // Start from beginning of current month
         let targetDate = new Date();
         targetDate.setDate(1);
         targetDate.setHours(0, 0, 0, 0);
@@ -234,34 +286,34 @@ const app = {
             const year = targetDate.getFullYear();
             const month = targetDate.getMonth();
             
-            // Calculate Week 2 (days 8-14) - find Monday of this week
-            const week2 = new Date(year, month, 8);
-            while (week2.getDay() !== 1) { // 1 = Monday
-                week2.setDate(week2.getDate() + 1);
+            // Calculate Week 1 (days 1-7) - find Monday of first week
+            const week1 = new Date(year, month, 1);
+            while (week1.getDay() !== 1) { // 1 = Monday
+                week1.setDate(week1.getDate() + 1);
             }
             
-            // Calculate Week 4 (days 22-28) - find Monday of this week  
-            const week4 = new Date(year, month, 22);
-            while (week4.getDay() !== 1) { // 1 = Monday
-                week4.setDate(week4.getDate() + 1);
+            // Calculate Week 3 (days 15-21) - find Monday of third week  
+            const week3 = new Date(year, month, 15);
+            while (week3.getDay() !== 1) { // 1 = Monday
+                week3.setDate(week3.getDate() + 1);
             }
             
             const today = new Date();
             today.setHours(0,0,0,0);
             
-            // Add Week 2 if it's today or future and not exists
-            if (week2 >= today && !this.weekExists(week2)) {
-                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week2) {
-                    this.createSingleWeek(week2); // Changed from addWeek to createSingleWeek
+            // Add Week 1 if it's today or future and not exists
+            if (week1 >= today && !this.weekExists(week1)) {
+                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week1) {
+                    this.createSingleWeek(week1);
                     added++;
                     if (added >= count) break;
                 }
             }
             
-            // Add Week 4 if it's today or future and not exists
-            if (week4 >= today && !this.weekExists(week4) && added < count) {
-                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week4) {
-                    this.createSingleWeek(week4); // Changed from addWeek to createSingleWeek
+            // Add Week 3 if it's today or future and not exists
+            if (week3 >= today && !this.weekExists(week3) && added < count) {
+                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week3) {
+                    this.createSingleWeek(week3);
                     added++;
                 }
             }
@@ -465,14 +517,12 @@ const app = {
                 </div>
                 <div class="week-assignments">
                     <div class="assignment prep ${this.data.userName && week.prep === this.data.userName ? 'me' : ''}">
-                        <div class="assignment-icon">👨‍🍳</div>
                         <div>
                             <div class="assignment-role">Food Prep</div>
                             <div class="assignment-person">${week.prep}</div>
                         </div>
                     </div>
                     <div class="assignment share ${this.data.userName && week.share === this.data.userName ? 'me' : ''}">
-                        <div class="assignment-icon">🤝</div>
                         <div>
                             <div class="assignment-role">Sharing</div>
                             <div class="assignment-person">${week.share}</div>

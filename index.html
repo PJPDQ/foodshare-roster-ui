@@ -54,8 +54,12 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1>🍽️ FoodShare Roster</h1>
+            <h1>FoodShare Roster</h1>
             <div class="header-controls">
+                <button class="view-toggle-btn" id="viewToggleBtn" onclick="app.toggleView()">
+                    <span id="viewToggleIcon">⛪</span>
+                    <span id="viewToggleText">Church Info</span>
+                </button>
                 <button class="user-profile-btn" id="userProfileBtn" onclick="app.openUserProfile()">
                     <span id="userNameDisplay">👤 Set My Name</span>
                 </button>
@@ -67,38 +71,123 @@
     </header>
 
     <!-- Main Content -->
-    <div class="main-container">
-        <!-- Left Panel: Calendar/List View (75%) -->
-        <div class="panel" style="grid-column: 1;">
-            <div class="panel-header">
-                <div class="panel-title">
-                    📅 Weekly Schedule
-                    <span id="weekCount" style="font-size: 0.875rem; color: var(--text-light); font-weight: normal;">(0 weeks)</span>
+    <div id="rosterView" class="view-section active">
+        <div class="main-container">
+            <!-- Left Panel: Calendar/List View (75%) -->
+            <div class="panel" style="grid-column: 1;">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        Weekly Schedule
+                        <span id="weekCount" style="font-size: 0.875rem; color: var(--text-light); font-weight: normal;">(0 weeks)</span>
+                    </div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="app.setView('calendar')">Calendar</button>
+                        <button class="view-btn" onclick="app.setView('list')">List</button>
+                    </div>
                 </div>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="app.setView('calendar')">Calendar</button>
-                    <button class="view-btn" onclick="app.setView('list')">List</button>
+                <div class="panel-body" id="scheduleContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Schedule Yet</h3>
+                        <p>Add members and generate your first week to get started</p>
+                    </div>
                 </div>
             </div>
-            <div class="panel-body" id="scheduleContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <h3>No Schedule Yet</h3>
-                    <p>Add members and generate your first week to get started</p>
+
+            <!-- Right Panel: Statistics (25%) -->
+            <div class="panel" style="grid-column: 2;">
+                <div class="panel-header">
+                    <div class="panel-title">📊 Statistics</div>
+                </div>
+                <div class="panel-body">
+                    <div class="stats-grid" id="statsContainer">
+                        <div class="empty-state" style="padding: 1rem;">
+                            <p>Add members to see statistics</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Right Panel: Statistics (25%) -->
-        <div class="panel" style="grid-column: 2;">
-            <div class="panel-header">
-                <div class="panel-title">📊 Statistics</div>
+    <div id="churchInfoView" class="view-section">
+        <div class="church-info-container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-title">WELCOME<br>HOME</div>
+                <div class="welcome-subtitle">Praise the Lord, my soul; all my inmost being, praise his holy name. (Psalm 103:1)</div>
             </div>
-            <div class="panel-body">
-                <div class="stats-grid" id="statsContainer">
-                    <div class="empty-state" style="padding: 1rem;">
-                        <p>Add members to see statistics</p>
+
+            <!-- Info Cards Grid -->
+            <div class="info-grid">
+                <!-- Sunday Service Card -->
+                <div class="info-card">
+                    <div class="info-card-title coral">Sunday Service</div>
+                    
+                    <div class="service-item">
+                        <div class="service-time">9am</div>
+                        <div class="service-name">International Service</div>
                     </div>
+
+                    <div class="service-item">
+                        <div class="service-time">9.15am</div>
+                        <div class="service-name">ROCK Junior</div>
+                    </div>
+
+                    <div class="service-item">
+                        <div class="service-time">5pm</div>
+                        <div class="service-name">KGC</div>
+                    </div>
+                </div>
+
+                <!-- Upper Room Card -->
+                <div class="info-card">
+                    <div class="info-card-title mauve">Upper Room</div>
+                    
+                    <div class="service-item">
+                        <div class="meeting-info">Every Saturday 8am</div>
+                    </div>
+
+                    <div class="simple-toggle" onclick="this.classList.toggle('show-text')">
+                        <div class="simple-text">
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Meeting ID: 895 0855 5811</div>
+                            <div style="font-size: 18px; font-weight: 700; color: var(--coral-red);">Passcode: RIM-BNE</div>
+                            <div class="simple-caption">Tap to see QR code</div>
+                        </div>
+                            <div class="simple-image">
+                                <img src="./assets/image.png" alt="QR Code" style="width: 150px; height: 150px;">
+                            <div class="simple-caption">Tap to see details</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kingdom Communities Card -->
+                <div class="info-card">
+                    <div class="info-card-title blue">Kingdom Communities</div>
+                    
+                    <div class="community-info">
+                        <div class="community-item">
+                            <div class="day-time">Wednesday 6.45pm</div>
+                            <div class="location-name">KC BLEASBY</div>
+                            <div class="contact-name">Jennifer Gani</div>
+                        </div>
+
+                        <div class="community-item">
+                            <div class="day-time">Friday 6.30pm</div>
+                            <div class="location-name">KC FRIDAY</div>
+                            <div class="contact-name">Sanggam Lumbangaol</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="contact-card">
+                <h2>Contact Us</h2>
+                <div class="contact-details">
+                    <p>📧 Email: info@rockchurch.org</p>
+                    <p>📞 Phone: +61 XXX XXX XXX</p>
+                    <p>📍 Address: Brisbane, Australia</p>
                 </div>
             </div>
         </div>
@@ -111,7 +200,7 @@
     <div class="modal" id="userProfileModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">👤 My Profile</div>
+                <div class="modal-title">My Profile</div>
                 <button class="close-btn" onclick="app.closeUserProfile()">&times;</button>
             </div>
             <div class="modal-body">
@@ -158,7 +247,7 @@
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">⚙️ Manage Members</div>
+                <div class="modal-title">Manage Members</div>
                 <button class="close-btn" onclick="app.closeSettings()">&times;</button>
             </div>
             <div class="modal-body">

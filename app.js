@@ -639,7 +639,33 @@ const app = {
         this.data = { members: [], weeks: [], view: 'calendar', userName: '', notificationsEnabled: false };
         this.render();
         this.closeSettings();
-    }
+    },
+    toggleView() {
+        const rosterView = document.getElementById('rosterView');
+        const churchView = document.getElementById('churchInfoView');
+        const toggleBtn = document.getElementById('viewToggleBtn');
+        const toggleIcon = document.getElementById('viewToggleIcon');
+        const toggleText = document.getElementById('viewToggleText');
+        const addWeekBtn = document.getElementById('addWeekBtn');
+        
+        if (rosterView.classList.contains('active')) {
+            // Switch to Church Info
+            rosterView.classList.remove('active');
+            churchView.classList.add('active');
+            toggleIcon.textContent = '📅';
+            toggleText.textContent = 'Back to Roster';
+            addWeekBtn.style.display = 'none'; // Hide add week button in info view
+            window.scrollTo(0, 0);
+        } else {
+            // Switch back to Roster
+            churchView.classList.remove('active');
+            rosterView.classList.add('active');
+            toggleIcon.textContent = '⛪';
+            toggleText.textContent = 'Church Info';
+            addWeekBtn.style.display = 'inline-flex';
+            window.scrollTo(0, 0);
+        }
+    },
 };
 
 document.addEventListener('DOMContentLoaded', () => {

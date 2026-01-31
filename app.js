@@ -4,7 +4,9 @@ const app = {
         weeks: [],
         view: 'calendar',
         userName: '',
-        notificationsEnabled: false
+        notificationsEnabled: false,
+        fixedSharing: [],
+        allowSharingEdit: false 
     },
 
     init() {
@@ -27,13 +29,18 @@ const app = {
     },
 
     loadData() {
-        const saved = localStorage.getItem('foodRosterData');
+        const saved = null; //localStorage.getItem('foodRosterData');
+        // console.log(`SAVED = ${saved}`);
         if (saved) {
+            // console.log(`Loading saved data`);  
             this.data = JSON.parse(saved);
         } else {
+            console.log(`ELSE saved data`);  
             this.data.members = ['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wilaras', 'Andrew Wijaya', 'Kiki'];
-            this.generateWeeks(10);
+            this.generateWeeks(this.data.members.length * 2); 
         }
+        
+        // console.log(`END LOAD saved data`);  
         if (this.data.notificationsEnabled === undefined) {
             this.data.notificationsEnabled = false;
         }
@@ -281,44 +288,42 @@ const app = {
         
         let added = 0;
         let monthsChecked = 0;
+        let rotationIndex = 0; // Continue from where we left off
         
         while (added < count && monthsChecked < 24) {
             const year = targetDate.getFullYear();
             const month = targetDate.getMonth();
             
-            // Calculate Week 1 (days 1-7) - find Monday of first week
+            // Week 1 (first Monday)
             const week1 = new Date(year, month, 1);
-            while (week1.getDay() !== 1) { // 1 = Monday
-                week1.setDate(week1.getDate() + 1);
-            }
+            while (week1.getDay() !== 1) week1.setDate(week1.getDate() + 1);
             
-            // Calculate Week 3 (days 15-21) - find Monday of third week  
+            // Week 3 (third Monday)
             const week3 = new Date(year, month, 15);
-            while (week3.getDay() !== 1) { // 1 = Monday
-                week3.setDate(week3.getDate() + 1);
-            }
+            while (week3.getDay() !== 1) week3.setDate(week3.getDate() + 1);
             
             const today = new Date();
             today.setHours(0,0,0,0);
             
-            // Add Week 1 if it's today or future and not exists
+            // Process Week 1
             if (week1 >= today && !this.weekExists(week1)) {
-                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week1) {
-                    this.createSingleWeek(week1);
+                if (this.data.weeks.length === 0 || this.getLastWeekDate() < week1) {
+                    this.createWeekWithFixedSharing(week1, rotationIndex);
+                    rotationIndex++;
                     added++;
                     if (added >= count) break;
                 }
             }
             
-            // Add Week 3 if it's today or future and not exists
+            // Process Week 3
             if (week3 >= today && !this.weekExists(week3) && added < count) {
-                if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week3) {
-                    this.createSingleWeek(week3);
+                if (this.data.weeks.length === 0 || this.getLastWeekDate() < week3) {
+                    this.createWeekWithFixedSharing(week3, rotationIndex);
+                    rotationIndex++;
                     added++;
                 }
             }
             
-            // Move to next month
             targetDate.setMonth(targetDate.getMonth() + 1);
             monthsChecked++;
         }
@@ -327,18 +332,70 @@ const app = {
         this.render();
     },
 
-    // Renamed from addWeek to avoid conflict with button handler
-    createSingleWeek(date) {
-        const assignment = this.assignRoles(date);
+    getLastWeekDate() {
+        if (this.data.weeks.length === 0) return new Date(0);
+        return new Date(this.data.weeks[this.data.weeks.length - 1].startDate);
+    },
+
+    createWeekWithFixedSharing(date, rotationIndex) {
+        // Get fixed sharing person from rotation
+        const sharingPerson = this.getFixedSharingPerson(rotationIndex);
+        
+        // Get prep person (lowest frequency, not the sharing person)
+        const prepPerson = this.getNextPrepPerson(sharingPerson);
+        
         this.data.weeks.push({
             id: Date.now() + Math.random(),
             startDate: date.toISOString(),
-            prep: assignment.prep,
-            share: assignment.share
+            prep: prepPerson,
+            share: sharingPerson,
+            fixedShare: true, // Flag to indicate sharing is fixed
+            rotationIndex: rotationIndex // Track position in rotation
         });
-        // Sort weeks by date
+        console.log(`Created week on ${date.toISOString().split('T')[0]} - Prep: ${prepPerson}, Share: ${sharingPerson}`);  
+        // Sort by date
         this.data.weeks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     },
+
+    getFixedSharingPerson(index) {
+        if (this.data.fixedSharingRotation.length === 0) {
+            // Fallback to balanced rotation if not set
+            return this.data.members[index % this.data.members.length];
+        }
+        return this.data.fixedSharingRotation[index % this.data.fixedSharingRotation.length];
+    },
+
+    getNextPrepPerson(excludePerson) {
+        // Get frequency counts up to current point
+        const freq = this.getFrequencies();
+        
+        // Sort by prep frequency (ascending), excluding the sharing person
+        const candidates = this.data.members
+            .filter(m => m !== excludePerson)
+            .sort((a, b) => (freq[a]?.prep || 0) - (freq[b]?.prep || 0));
+        
+        return candidates[0] || this.data.members.find(m => m !== excludePerson) || 'TBD';
+    },
+
+    setFixedSharingRotation(rotationArray) {
+        // Admin function to set the fixed rotation pattern
+        this.data.fixedSharingRotation = rotationArray;
+        this.saveData();
+        alert('Fixed sharing rotation set. Regenerate weeks to apply.');
+    },
+
+    // // Renamed from addWeek to avoid conflict with button handler
+    // createSingleWeek(date) {
+    //     const assignment = this.assignRoles(date);
+    //     this.data.weeks.push({
+    //         id: Date.now() + Math.random(),
+    //         startDate: date.toISOString(),
+    //         prep: assignment.prep,
+    //         share: assignment.share
+    //     });
+    //     // Sort weeks by date
+    //     this.data.weeks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    // },
 
     weekExists(date) {
         const checkDate = date.toISOString().split('T')[0];
@@ -506,14 +563,20 @@ const app = {
         if (isMyShare) cardClass += ' my-turn-share';
 
         return `
-            <div class="${cardClass}" style="${isPast ? 'opacity: 0.7;' : ''}">
+            <div class="week-card ${isMyPrep ? 'my-turn-prep' : ''} ${isMyShare ? 'my-turn-share' : ''}">
                 ${(isMyPrep || isMyShare) ? `<div class="my-turn-badge">⭐ It's You!</div>` : ''}
                 <div class="week-header">
                     <div>
                         <div class="week-title">Week of ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
                         <div class="week-date">${dateStr}</div>
+                        ${week.manuallyEdited ? '<span style="font-size: 0.7rem; color: var(--warning); margin-left: 0.5rem;">Edited</span>' : ''}
                     </div>
-                    ${!isPast ? `<button class="btn-icon" onclick="app.removeWeek(${week.id})" style="background: transparent; color: var(--danger);">🗑️</button>` : '<span style="font-size: 0.75rem; color: var(--text-light);">✓ Completed</span>'}
+                    <div style="display: flex; gap: 0.5rem;">
+                        ${!isPast ? `
+                            <button class="btn-icon" onclick="app.openWeekEdit(${week.id})" style="background: var(--primary); color: white;" title="Edit">✏️</button>
+                            <button class="btn-icon" onclick="app.removeWeek(${week.id})" style="background: transparent; color: var(--danger);">🗑️</button>
+                        ` : ''}
+                    </div>
                 </div>
                 <div class="week-assignments">
                     <div class="assignment prep ${this.data.userName && week.prep === this.data.userName ? 'me' : ''}">
@@ -716,9 +779,169 @@ const app = {
             window.scrollTo(0, 0);
         }
     },
+
+
+    /* Edit Functionality */
+    openWeekEdit(weekId) {
+        const week = this.data.weeks.find(w => w.id === weekId);
+        if (!week) return;
+        
+        const prepSelect = document.getElementById('editPrep');
+        const shareSelect = document.getElementById('editShare');
+        
+        // Populate dropdowns
+        prepSelect.innerHTML = '<option value="">-- Select --</option>' + 
+            this.data.members.map(m => `<option value="${m}" ${m === week.prep ? 'selected' : ''}>${m}</option>`).join('');
+        
+        shareSelect.innerHTML = '<option value="">-- Select --</option>' + 
+            this.data.members.map(m => `<option value="${m}" ${m === week.share ? 'selected' : ''}>${m}</option>`).join('');
+        
+        // Disable sharing edit if it's fixed and not allowed
+        if (week.fixedShare && !this.data.allowSharingEdit) {
+            shareSelect.disabled = true;
+            shareSelect.title = "Sharing is in fixed rotation";
+        } else {
+            shareSelect.disabled = false;
+            shareSelect.title = "";
+        }
+        
+        // Store current week ID in modal
+        document.getElementById('editWeekModal').dataset.weekId = weekId;
+        
+        // Show recalculate option
+        const recalcOption = document.getElementById('recalculateOption');
+        const weekIndex = this.data.weeks.indexOf(week);
+        if (weekIndex < this.data.weeks.length - 1) {
+            recalcOption.style.display = 'block';
+            document.getElementById('recalcFuture').checked = true;
+        } else {
+            recalcOption.style.display = 'none';
+        }
+        
+        document.getElementById('editWeekModal').classList.add('active');
+    },
+
+    closeWeekEdit() {
+        document.getElementById('editWeekModal').classList.remove('active');
+    },
+
+    saveWeekEdit() {
+        const weekId = parseFloat(document.getElementById('editWeekModal').dataset.weekId);
+        const week = this.data.weeks.find(w => w.id === weekId);
+        if (!week) return;
+        
+        const newPrep = document.getElementById('editPrep').value;
+        const newShare = document.getElementById('editShare').value;
+        const recalc = document.getElementById('recalcFuture').checked;
+        
+        // Validation: Cannot be same person
+        if (newPrep === newShare) {
+            alert('Prep and Sharing cannot be the same person!');
+            return;
+        }
+        
+        // Update this week
+        week.prep = newPrep;
+        if (newShare) week.share = newShare; // Only update if changed
+        
+        // Mark as manually edited (removes fixed flag if sharing changed)
+        week.manuallyEdited = true;
+        if (week.share !== this.getFixedSharingPerson(week.rotationIndex)) {
+            week.fixedShare = false; // Break from fixed rotation
+        }
+        
+        this.saveData();
+        
+        // Recalculate future weeks if requested
+        if (recalc) {
+            this.recalculateFromWeek(weekId);
+        } else {
+            this.render();
+            this.closeWeekEdit();
+        }
+    },
+
+    recalculateFromWeek(fromWeekId) {
+        const fromIndex = this.data.weeks.findIndex(w => w.id === fromWeekId);
+        if (fromIndex === -1 || fromIndex === this.data.weeks.length - 1) {
+            this.render();
+            this.closeWeekEdit();
+            return;
+        }
+        
+        // Get current frequencies up to this point (including the edited week)
+        const currentFreq = this.getFrequenciesUpToIndex(fromIndex);
+        
+        // Recalculate remaining weeks
+        const futureWeeks = this.data.weeks.slice(fromIndex + 1);
+        
+        futureWeeks.forEach((week, idx) => {
+            // If week has fixed sharing and wasn't manually edited, respect it
+            if (week.fixedShare && !week.manuallyEdited) {
+                const sharingPerson = week.share;
+                // Find prep person with lowest current frequency who isn't the sharing person
+                const candidates = this.data.members
+                    .filter(m => m !== sharingPerson)
+                    .sort((a, b) => (currentFreq[a]?.prep || 0) - (currentFreq[b]?.prep || 0));
+                
+                week.prep = candidates[0] || this.data.members.find(m => m !== sharingPerson);
+                
+                // Update frequency tracker
+                currentFreq[week.prep] = currentFreq[week.prep] || {prep: 0, share: 0};
+                currentFreq[week.prep].prep++;
+            } else {
+                // Both roles can be rebalanced
+                const totalFreqs = this.data.members.map(m => ({
+                    name: m,
+                    total: (currentFreq[m]?.prep || 0) + (currentFreq[m]?.share || 0)
+                })).sort((a, b) => a.total - b.total);
+                
+                // Assign prep to lowest, share to second lowest (different people)
+                const prepPerson = totalFreqs[0].name;
+                let sharePerson = totalFreqs[1]?.name || totalFreqs[0].name;
+                
+                // If only one person available, force different person
+                if (prepPerson === sharePerson && this.data.members.length > 1) {
+                    sharePerson = totalFreqs.find(p => p.name !== prepPerson)?.name || sharePerson;
+                }
+                
+                week.prep = prepPerson;
+                week.share = sharePerson;
+                
+                currentFreq[prepPerson] = currentFreq[prepPerson] || {prep: 0, share: 0};
+                currentFreq[prepPerson].prep++;
+                currentFreq[sharePerson] = currentFreq[sharePerson] || {prep: 0, share: 0};
+                currentFreq[sharePerson].share++;
+            }
+        });
+        
+        this.saveData();
+        this.render();
+        this.closeWeekEdit();
+        
+        // Show confirmation
+        const recalculatedCount = futureWeeks.length;
+        setTimeout(() => {
+            alert(`Recalculated ${recalculatedCount} future weeks to balance frequencies.`);
+        }, 100);
+    },
+
+    getFrequenciesUpToIndex(index) {
+        const freq = {};
+        this.data.members.forEach(m => freq[m] = {prep: 0, share: 0});
+        
+        for (let i = 0; i <= index && i < this.data.weeks.length; i++) {
+            const week = this.data.weeks[i];
+            if (freq[week.prep]) freq[week.prep].prep++;
+            if (freq[week.share]) freq[week.share].share++;
+        }
+        
+        return freq;
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    app.setFixedSharingRotation(['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', ' Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
     app.init();
 });
 

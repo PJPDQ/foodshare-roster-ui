@@ -271,6 +271,49 @@
         </div>
     </div>
 
+    <!-- Week Edit Modal -->
+    <div class="modal" id="editWeekModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Edit Week</div>
+                <button class="close-btn" onclick="app.closeWeekEdit()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Food Prep</label>
+                    <select class="form-select" id="editPrep"></select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Sharing 
+                        <span id="fixedShareWarning" style="font-size: 0.75rem; color: var(--warning); display: none;">
+                            (Fixed rotation - edit disabled)
+                        </span>
+                    </label>
+                    <select class="form-select" id="editShare"></select>
+                </div>
+                
+                <div class="form-group" id="recalculateOption" style="display: none;">
+                    <div class="toggle-switch" style="background: #fef3c7; border: 1px solid #f59e0b;">
+                        <div>
+                            <div class="toggle-label">Recalculate Future Weeks</div>
+                            <div class="toggle-description">Automatically balance remaining weeks based on this change</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="recalcFuture" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                    <button class="btn" onclick="app.closeWeekEdit()" style="flex: 1;">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.saveWeekEdit()" style="flex: 2;">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

@@ -381,7 +381,7 @@ const app = {
         // Admin function to set the fixed rotation pattern
         this.data.fixedSharingRotation = rotationArray;
         this.saveData();
-        alert('Fixed sharing rotation set. Regenerate weeks to apply.');
+        // alert('Fixed sharing rotation set. Regenerate weeks to apply.');
     },
 
     // // Renamed from addWeek to avoid conflict with button handler

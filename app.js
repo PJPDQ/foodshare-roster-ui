@@ -463,8 +463,8 @@ const app = {
         });
 
         this.data.weeks.forEach(week => {
-            if (freq[week.prep]) freq[week.prep].prep++;
             if (freq[week.share]) freq[week.share].share++;
+            if (freq[week.prep]) freq[week.prep].prep++;
         });
 
         return freq;
@@ -942,7 +942,7 @@ const app = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    app.setFixedSharingRotation(['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', ' Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
+    app.setFixedSharingRotation(['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', 'Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
     app.init();
 });
 

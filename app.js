@@ -36,7 +36,7 @@ const app = {
             this.data = JSON.parse(saved);
         } else {
             console.log(`ELSE saved data`);  
-            this.data.members = ['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wilaras', 'Andrew Wijaya', 'Kiki'];
+            this.data.members = ['Kiki', 'Valdo', 'Joy', 'Yowil', 'Stanley', 'Kezia', 'Hansel', 'Nathan C', 'Acha', 'Cornelius', 'Dicky', 'Andrew Wilaras', 'Andrew Wijaya'];
             this.generateWeeks(this.data.fixedSharingRotation.length); 
         }
         
@@ -368,12 +368,13 @@ const app = {
     getNextPrepPerson(excludePerson) {
         // Get frequency counts up to current point
         const freq = this.getFrequencies();
-        
+        console.log(`Exclude Person = ${excludePerson}\nFrequencies for prep selection:`, freq);   
         // Sort by prep frequency (ascending), excluding the sharing person
         const candidates = this.data.members
             .filter(m => m !== excludePerson)
             .sort((a, b) => (freq[a]?.prep || 0) - (freq[b]?.prep || 0));
-        
+        console.log(`Prep candidates (sorted):`, candidates);
+        console.log(`Result = ${candidates[0] || this.data.members.find(m => m !== excludePerson) || 'TBD'}`);  
         return candidates[0] || this.data.members.find(m => m !== excludePerson) || 'TBD';
     },
 

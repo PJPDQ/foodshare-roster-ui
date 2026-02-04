@@ -6,6 +6,16 @@ const app = {
         userName: '',
         notificationsEnabled: false,
         fixedSharingRotation: [],
+        notificationSettings: {
+            prepNotice: 1440,      // Minutes before (default: 1 day = 1440 min)
+            shareNotice: 1440,     // Minutes before
+            notifyPrep: true,      // Whether to notify for prep
+            notifyShare: true      // Whether to notify for share
+        },
+        lastNotified: {          // Track what we already notified for
+            prep: null,          // Week ID
+            share: null          // Week ID
+        },
         allowSharingEdit: false 
     },
 
@@ -51,7 +61,7 @@ const app = {
     },
 
     setupNotifications() {
-        const toggle = document.getElementById('notificationToggle');
+        const toggle = document.getElementById('notificationMasterToggle');
         toggle.checked = this.data.notificationsEnabled;
         this.updateNotificationStatus();
     },
@@ -98,10 +108,10 @@ const app = {
     updateNotificationStatus() {
         const status = document.getElementById('notificationStatus');
         if (this.data.notificationsEnabled) {
-            status.textContent = "✅ Notifications are enabled";
+            status.textContent = "Notifications are enabled";
             status.style.color = "var(--secondary)";
         } else {
-            status.textContent = "🔕 Notifications are disabled";
+            status.textContent = "Notifications are disabled";
             status.style.color = "var(--text-light)";
         }
     },
@@ -163,10 +173,10 @@ const app = {
         banner.className = 'notification-banner show my-turn-' + type;
         
         if (type === 'prep') {
-            message.textContent = `🍳 Hey ${this.data.userName}! It's your FOOD PREP week (Fortnightly)!`;
+            message.textContent = `Hey ${this.data.userName}! It's your FOOD PREP week (Fortnightly)!`;
             headerBtn.classList.add('has-turn');
         } else {
-            message.textContent = `🤝 Hey ${this.data.userName}! It's your SHARING week (Fortnightly)!`;
+            message.textContent = `Hey ${this.data.userName}! It's your SHARING week (Fortnightly)!`;
             headerBtn.classList.add('has-turn');
         }
 
@@ -222,9 +232,9 @@ const app = {
     updateUserDisplay() {
         const display = document.getElementById('userNameDisplay');
         if (this.data.userName) {
-            display.textContent = `👤 ${this.data.userName}`;
+            display.textContent = `${this.data.userName}`;
         } else {
-            display.textContent = `👤 Set My Name`;
+            display.textContent = `Set My Name`;
         }
     },
 
@@ -296,11 +306,11 @@ const app = {
             
             // Week 1 (first Monday)
             const week1 = new Date(year, month, 1);
-            while (week1.getDay() !== 1) week1.setDate(week1.getDate() + 1);
+            while (week1.getDay() !== 2) week1.setDate(week1.getDate() + 1);
             
             // Week 3 (third Monday)
             const week3 = new Date(year, month, 15);
-            while (week3.getDay() !== 1) week3.setDate(week3.getDate() + 1);
+            while (week3.getDay() !== 2) week3.setDate(week3.getDate() + 1);
             
             const today = new Date();
             today.setHours(0,0,0,0);
@@ -529,8 +539,8 @@ const app = {
         }
         
         // Show all weeks (remove the fortnightly filter for now)
-        const weeksToShow = this.data.weeks; // Remove the .filter() line if you had one
-        
+        const weeksToShow = this.data.weeks; 
+
         if (this.data.view === 'calendar') {
             container.innerHTML = `<div class="weeks-container">${weeksToShow.map(week => this.renderWeekCard(week)).join('')}</div>`;
         } else {
@@ -548,6 +558,7 @@ const app = {
 
     renderWeekCard(week) {
         const date = new Date(week.startDate);
+        date.setDate(date.getDate() + 1);
         const endDate = new Date(date);
         endDate.setDate(endDate.getDate() + 6);
         
@@ -938,11 +949,376 @@ const app = {
         }
         
         return freq;
+    },
+
+    // User Profile Functions
+    openUserProfile() {
+        this.renderUserNameSelect();
+        this.loadNotificationSettings();
+        document.getElementById('userProfileModal').classList.add('active');
+    },
+
+    closeUserProfile() {
+        document.getElementById('userProfileModal').classList.remove('active');
+    },
+
+    renderUserNameSelect() {
+        const select = document.getElementById('userNameSelect');
+        const currentValue = this.data.userName || '';
+        
+        // Clear and rebuild options
+        select.innerHTML = '<option value="">-- Select your name --</option>';
+        
+        this.data.members.forEach(member => {
+            const option = document.createElement('option');
+            option.value = member;
+            option.textContent = member;
+            if (member === currentValue) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        
+        // Update preview
+        this.updateNamePreview(currentValue);
+    },
+
+    updateNamePreview(name) {
+        const preview = document.getElementById('userNamePreview');
+        const display = document.getElementById('selectedNameDisplay');
+        
+        if (name) {
+            display.textContent = name;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    },
+
+    handleUserNameChange() {
+        const select = document.getElementById('userNameSelect');
+        const newName = select.value;
+        
+        this.data.userName = newName;
+        this.saveData();
+        
+        this.updateNamePreview(newName);
+        this.updateUserDisplay();
+        
+        // Re-check notifications with new name
+        if (this.data.notificationsEnabled) {
+            this.checkUpcomingNotifications();
+        }
+    },
+
+    updateUserDisplay() {
+        const display = document.getElementById('userNameDisplay');
+        const profileBtn = document.getElementById('userProfileBtn');
+        
+        if (this.data.userName) {
+            display.textContent = `👤 ${this.data.userName}`;
+            
+            // Check if upcoming turn to highlight button
+            const upcoming = this.getUpcomingTurn();
+            if (upcoming && upcoming.daysUntil <= 7) {
+                profileBtn.classList.add('has-turn');
+            } else {
+                profileBtn.classList.remove('has-turn');
+            }
+        } else {
+            display.textContent = `👤 Set My Name`;
+            profileBtn.classList.remove('has-turn');
+        }
+    },
+
+    // Notification Functions
+    async toggleNotifications() {
+        const enabled = document.getElementById('notificationMasterToggle').checked;
+        
+        if (enabled) {
+            // Request permission first
+            const permission = await this.requestNotificationPermission();
+            if (!permission) {
+                document.getElementById('notificationMasterToggle').checked = false;
+                this.updateNotificationStatus('denied');
+                return;
+            }
+            
+            // Validate user name is set
+            if (!this.data.userName) {
+                alert('Please select your name first!');
+                document.getElementById('notificationMasterToggle').checked = false;
+                return;
+            }
+        }
+        
+        this.data.notificationsEnabled = enabled;
+        this.saveData();
+        
+        // Show/hide settings panel
+        const settingsPanel = document.getElementById('notificationSettingsPanel');
+        settingsPanel.style.display = enabled ? 'block' : 'none';
+        
+        this.updateNotificationStatus(enabled ? 'enabled' : 'disabled');
+        
+        if (enabled) {
+            this.checkUpcomingNotifications();
+            this.showNotification('Notifications Enabled', 
+                `Hi ${this.data.userName}! You'll be reminded before your turn.`);
+        }
+    },
+
+    updateNotificationType(type) {
+        const isEnabled = document.getElementById(`notify${type.charAt(0).toUpperCase() + type.slice(1)}Toggle`).checked;
+        this.data.notificationSettings[`notify${type.charAt(0).toUpperCase() + type.slice(1)}`] = isEnabled;
+        
+        // Show/hide timing container
+        const container = document.getElementById(`${type}TimingContainer`);
+        container.style.display = isEnabled ? 'block' : 'none';
+        container.style.opacity = isEnabled ? '1' : '0.5';
+        
+        this.saveData();
+    },
+
+    updateNoticeTiming(type) {
+        const minutes = parseInt(document.getElementById(`${type}NoticeSelect`).value);
+        this.data.notificationSettings[`${type}Notice`] = minutes;
+        this.saveData();
+        
+        // Preview the timing
+        const days = Math.floor(minutes / 1440);
+        const hours = Math.floor((minutes % 1440) / 60);
+        const mins = minutes % 60;
+        let timeStr = '';
+        if (days > 0) timeStr += `${days} day${days > 1 ? 's' : ''} `;
+        if (hours > 0) timeStr += `${hours} hour${hours > 1 ? 's' : ''} `;
+        if (mins > 0) timeStr += `${mins} min${mins > 1 ? 's' : ''}`;
+        
+        console.log(`${type} notice set to: ${timeStr.trim()} before`);
+    },
+
+    async requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            alert("This browser does not support notifications");
+            return false;
+        }
+        
+        if (Notification.permission === "granted") {
+            return true;
+        }
+        
+        if (Notification.permission === "denied") {
+            alert("Notifications are blocked. Please enable them in browser settings.");
+            return false;
+        }
+        
+        const permission = await Notification.requestPermission();
+        return permission === "granted";
+    },
+
+    updateNotificationStatus(status) {
+        const statusEl = document.getElementById('notificationStatus');
+        
+        switch(status) {
+            case 'enabled':
+                statusEl.innerHTML = '<span style="color: var(--secondary);">Notifications active</span>';
+                break;
+            case 'disabled':
+                statusEl.innerHTML = '<span style="color: var(--text-light);">Notifications disabled</span>';
+                break;
+            case 'denied':
+                statusEl.innerHTML = '<span style="color: var(--danger);">Permission denied - check browser settings</span>';
+                break;
+            default:
+                statusEl.innerHTML = '';
+        }
+    },
+
+    loadNotificationSettings() {
+        const settings = this.data.notificationSettings || {};
+        const masterToggle = document.getElementById('notificationMasterToggle');
+        const settingsPanel = document.getElementById('notificationSettingsPanel');
+        
+        // Set master toggle
+        masterToggle.checked = this.data.notificationsEnabled;
+        
+        // Show/hide settings panel
+        settingsPanel.style.display = this.data.notificationsEnabled ? 'block' : 'none';
+        
+        // Set notification type toggles
+        document.getElementById('notifyPrepToggle').checked = settings.notifyPrep !== false;
+        document.getElementById('notifyShareToggle').checked = settings.notifyShare !== false;
+        
+        // Set timing dropdowns
+        document.getElementById('prepNoticeSelect').value = settings.prepNotice || 1440;
+        document.getElementById('shareNoticeSelect').value = settings.shareNotice || 1440;
+        
+        // Show/hide timing containers based on toggles
+        document.getElementById('prepTimingContainer').style.display = 
+            settings.notifyPrep !== false ? 'block' : 'none';
+        document.getElementById('shareTimingContainer').style.display = 
+            settings.notifyShare !== false ? 'block' : 'none';
+        
+        this.updateNotificationStatus(this.data.notificationsEnabled ? 'enabled' : 'disabled');
+    },
+
+    // Core Notification Logic
+    checkUpcomingNotifications() {
+        if (!this.data.userName || !this.data.notificationsEnabled) return;
+        
+        const now = new Date();
+        const settings = this.data.notificationSettings;
+        
+        this.data.weeks.forEach(week => {
+            const weekStart = new Date(week.startDate);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            // Check if week is in the future
+            if (weekStart <= now) return; // Skip past/current weeks
+            
+            const msUntil = weekStart - now;
+            const minutesUntil = Math.floor(msUntil / (1000 * 60));
+            
+            // Check Food Prep notification
+            if (settings.notifyPrep !== false && week.prep === this.data.userName) {
+                const noticeMinutes = settings.prepNotice || 1440;
+                
+                if (minutesUntil <= noticeMinutes && minutesUntil > 0) {
+                    // Check if we already notified for this week
+                    if (this.data.lastNotified?.prep !== week.id) {
+                        this.sendTurnNotification('prep', week, minutesUntil);
+                        this.data.lastNotified = this.data.lastNotified || {};
+                        this.data.lastNotified.prep = week.id;
+                        this.saveData();
+                    }
+                }
+            }
+            
+            // Check Sharing notification
+            if (settings.notifyShare !== false && week.share === this.data.userName) {
+                const noticeMinutes = settings.shareNotice || 1440;
+                
+                if (minutesUntil <= noticeMinutes && minutesUntil > 0) {
+                    if (this.data.lastNotified?.share !== week.id) {
+                        this.sendTurnNotification('share', week, minutesUntil);
+                        this.data.lastNotified = this.data.lastNotified || {};
+                        this.data.lastNotified.share = week.id;
+                        this.saveData();
+                    }
+                }
+            }
+        });
+    },
+
+    sendTurnNotification(type, week, minutesUntil) {
+        const typeLabel = type === 'prep' ? 'FOOD PREP' : 'SHARING';
+        const typeEmoji = type === 'prep' ? '🍳' : '🤝';
+        
+        // Format time until
+        let timeStr;
+        if (minutesUntil >= 1440) {
+            const days = Math.round(minutesUntil / 1440);
+            timeStr = `${days} day${days > 1 ? 's' : ''}`;
+        } else if (minutesUntil >= 60) {
+            const hours = Math.round(minutesUntil / 60);
+            timeStr = `${hours} hour${hours > 1 ? 's' : ''}`;
+        } else {
+            timeStr = `${minutesUntil} minutes`;
+        }
+        
+        const title = `Your Turn in ${timeStr}!`;
+        const body = `${typeEmoji} Hi ${this.data.userName}! You have ${typeLabel} duty starting ${new Date(week.startDate).toLocaleDateString()}`;
+        
+        // Browser notification
+        this.showBrowserNotification(title, body);
+        
+        // In-app banner
+        this.showInAppBanner(type, timeStr, typeLabel);
+    },
+
+    showBrowserNotification(title, body) {
+        if (!this.data.notificationsEnabled) return;
+        if (Notification.permission !== "granted") return;
+        
+        new Notification(title, {
+            body: body,
+            icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%234f46e5' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E",
+            badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%234f46e5' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E",
+            tag: 'turn-notification',
+            requireInteraction: false,
+            renotify: true
+        });
+    },
+
+    showInAppBanner(type, timeStr, typeLabel) {
+        const banner = document.getElementById('turnBanner');
+        const message = document.getElementById('turnMessage');
+        const headerBtn = document.getElementById('userProfileBtn');
+        
+        banner.className = `notification-banner show my-turn-${type}`;
+        message.innerHTML = `${type === 'prep' ? '🍳' : '🤝'} <strong>${timeStr} until your ${typeLabel} duty!</strong> Get ready!`;
+        headerBtn.classList.add('has-turn');
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            banner.classList.remove('show');
+        }, 10000);
+    },
+
+    sendTestNotification() {
+        if (!this.data.userName) {
+            alert('Please select your name first!');
+            return;
+        }
+        
+        const prepTime = document.getElementById('prepNoticeSelect').value;
+        const shareTime = document.getElementById('shareNoticeSelect').value;
+        
+        const testWeek = {
+            startDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+            prep: this.data.userName,
+            share: 'Someone Else'
+        };
+        
+        // Show both types for testing
+        if (this.data.notificationSettings.notifyPrep !== false) {
+            this.sendTurnNotification('prep', testWeek, parseInt(prepTime));
+        }
+        
+        setTimeout(() => {
+            if (this.data.notificationSettings.notifyShare !== false) {
+                this.sendTurnNotification('share', testWeek, parseInt(shareTime));
+            }
+        }, 2000);
+        
+        alert('Test notifications sent! Check your browser notifications.');
+    },
+
+    getUpcomingTurn() {
+        if (!this.data.userName) return null;
+        
+        const now = new Date();
+        
+        for (const week of this.data.weeks) {
+            const start = new Date(week.startDate);
+            if (start > now) {
+                const daysUntil = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
+                
+                if (week.prep === this.data.userName) {
+                    return { type: 'prep', week, daysUntil };
+                }
+                if (week.share === this.data.userName) {
+                    return { type: 'share', week, daysUntil };
+                }
+            }
+        }
+        return null;
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    app.setFixedSharingRotation(['Valdo', 'Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', 'Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
+    app.setFixedSharingRotation(['Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', 'Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
     app.init();
 });
 

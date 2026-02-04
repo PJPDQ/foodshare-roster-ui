@@ -198,52 +198,119 @@
     </footer>
 
     <div class="modal" id="userProfileModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <div class="modal-title">My Profile</div>
+                <div class="modal-title">👤 My Profile & Notifications</div>
                 <button class="close-btn" onclick="app.closeUserProfile()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Select Your Name</label>
+                
+                <!-- User Selection -->
+                <div class="form-group" style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                    <label class="form-label">Who are you?</label>
                     <select class="form-select" id="userNameSelect" onchange="app.handleUserNameChange()">
                         <option value="">-- Select your name --</option>
                     </select>
                     <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.5rem;">
                         Don't see your name? Ask the admin to add you in Members settings.
                     </p>
+                    <div id="userNamePreview" style="margin-top: 0.75rem; padding: 0.75rem; background: var(--bg); border-radius: 0.5rem; display: none;">
+                        <strong>Selected:</strong> <span id="selectedNameDisplay" style="color: var(--primary); font-weight: 700;"></span>
+                    </div>
                 </div>
 
+                <!-- Master Notification Toggle -->
                 <div class="form-group">
-                    <label class="form-label">Notifications</label>
-                    <div class="toggle-switch">
+                    <div class="toggle-switch" style="background: linear-gradient(135deg, var(--bg), #f9fafb); border: 2px solid var(--border);">
                         <div>
                             <div class="toggle-label">Enable Notifications</div>
-                            <div class="toggle-description">Get notified when it's your turn</div>
+                            <div class="toggle-description">Get reminded when it's your turn</div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" id="notificationToggle" onchange="app.toggleNotifications()">
+                            <input type="checkbox" id="notificationMasterToggle" onchange="app.toggleNotifications()">
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <p id="notificationStatus" style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem; font-style: italic;">
-                        Notifications are disabled
-                    </p>
+                    <p id="notificationStatus" style="font-size: 0.875rem; margin-top: 0.75rem; font-weight: 600;"></p>
                 </div>
 
-                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
-                    <strong style="color: #92400e; font-size: 0.875rem;">📱 How it works:</strong>
-                    <ul style="margin-top: 0.5rem; margin-left: 1rem; font-size: 0.875rem; color: #92400e;">
+                <!-- Notification Settings (shown when enabled) -->
+                <div id="notificationSettingsPanel" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
+                    
+                    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text);">Customize Alerts</h3>
+                    
+                    <!-- Food Prep Settings -->
+                    <div class="notification-type-block" style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span style="font-weight: 700; color: #1e40af;">Food Prep</span>
+                            <label class="switch" style="transform: scale(0.85);">
+                                <input type="checkbox" id="notifyPrepToggle" checked onchange="app.updateNotificationType('prep')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div id="prepTimingContainer">
+                            <label style="font-size: 0.875rem; font-weight: 600; color: #3b82f6; display: block; margin-bottom: 0.5rem;">
+                                Remind me:
+                            </label>
+                            <select class="form-select" id="prepNoticeSelect" onchange="app.updateNoticeTiming('prep')" style="border-color: #3b82f6; background: white;">
+                                <option value="10080">1 week before</option>
+                                <option value="4320">3 days before</option>
+                                <option value="1440" selected>1 day before</option>
+                                <option value="720">12 hours before</option>
+                                <option value="240">4 hours before</option>
+                                <option value="60">1 hour before</option>
+                                <option value="30">30 minutes before</option>
+                                <option value="15">15 minutes before</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sharing Settings -->
+                    <div class="notification-type-block" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span style="font-weight: 700; color: #065f46;">Sharing</span>
+                            <label class="switch" style="transform: scale(0.85);">
+                                <input type="checkbox" id="notifyShareToggle" checked onchange="app.updateNotificationType('share')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div id="shareTimingContainer">
+                            <label style="font-size: 0.875rem; font-weight: 600; color: #10b981; display: block; margin-bottom: 0.5rem;">
+                                Remind me:
+                            </label>
+                            <select class="form-select" id="shareNoticeSelect" onchange="app.updateNoticeTiming('share')" style="border-color: #10b981; background: white;">
+                                <option value="10080">1 week before</option>
+                                <option value="4320">3 days before</option>
+                                <option value="1440" selected>1 day before</option>
+                                <option value="720">12 hours before</option>
+                                <option value="240">4 hours before</option>
+                                <option value="60">1 hour before</option>
+                                <option value="30">30 minutes before</option>
+                                <option value="15">15 minutes before</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Test Notification -->
+                    <button class="btn btn-primary" onclick="app.sendTestNotification()" style="width: 100%; margin-top: 0.5rem;">
+                        Send Test Notification
+                    </button>
+                </div>
+
+                <!-- Info Box -->
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem;">
+                    <strong style="color: #92400e; font-size: 0.875rem;">How it works:</strong>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.25rem; font-size: 0.875rem; color: #92400e; line-height: 1.6;">
                         <li>Select your name from the list</li>
-                        <li>Enable notifications</li>
-                        <li>Get alerts when it's your turn to prep or share</li>
-                        <li>We'll check automatically when you open the app</li>
+                        <li>Choose when you want to be reminded</li>
+                        <li>We'll check every minute for upcoming duties</li>
+                        <li>You'll get a browser notification + in-app banner</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">

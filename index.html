@@ -196,7 +196,32 @@
     <footer class="footer">
         <p>&copy; 2026 ROCK GROW-ing Brisbane.</p>
     </footer>
-
+    <!-- Auth Container (shown when not logged in) -->
+    <div id="authContainer" style="display: none;">
+        <div class="auth-card">
+            <h2>⛪ FoodShare Roster</h2>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h3>Sign In</h3>
+                <input type="email" id="loginEmail" placeholder="Email" class="form-input">
+                <input type="password" id="loginPassword" placeholder="Password" class="form-input">
+                <button onclick="authApp.login()" class="btn btn-primary">Sign In</button>
+                <p>Don't have an account? <a href="#" onclick="authApp.showSignup()">Sign up</a></p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <h3>Sign Up</h3>
+                <input type="text" id="signupName" placeholder="Full Name" class="form-input">
+                <input type="text" id="signupUsername" placeholder="Username" class="form-input">
+                <input type="email" id="signupEmail" placeholder="Email" class="form-input">
+                <input type="password" id="signupPassword" placeholder="Password" class="form-input">
+                <button onclick="authApp.signup()" class="btn btn-primary">Create Account</button>
+                <p>Already have an account? <a href="#" onclick="authApp.showLogin()">Sign in</a></p>
+            </div>
+        </div>
+    </div>
     <div class="modal" id="userProfileModal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
@@ -204,8 +229,6 @@
                 <button class="close-btn" onclick="app.closeUserProfile()">&times;</button>
             </div>
             <div class="modal-body">
-                
-                <!-- User Selection -->
                 <div class="form-group" style="border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
                     <label class="form-label">Who are you?</label>
                     <select class="form-select" id="userNameSelect" onchange="app.handleUserNameChange()">

@@ -7,14 +7,14 @@ const app = {
         notificationsEnabled: false,
         fixedSharingRotation: [],
         notificationSettings: {
-            prepNotice: 1440,      // Minutes before (default: 1 day = 1440 min)
-            shareNotice: 1440,     // Minutes before
-            notifyPrep: true,      // Whether to notify for prep
-            notifyShare: true      // Whether to notify for share
+            prepNotice: 1440,      
+            shareNotice: 1440,     
+            notifyPrep: true,      
+            notifyShare: true      
         },
-        lastNotified: {          // Track what we already notified for
-            prep: null,          // Week ID
-            share: null          // Week ID
+        lastNotified: {          
+            prep: null,          
+            share: null          
         },
         allowSharingEdit: false 
     },
@@ -40,17 +40,13 @@ const app = {
 
     loadData() {
         const saved = null; //localStorage.getItem('foodRosterData');
-        // console.log(`SAVED = ${saved}`);
         if (saved) {
-            // console.log(`Loading saved data`);  
             this.data = JSON.parse(saved);
         } else {
-            console.log(`ELSE saved data`);  
             this.data.members = ['Kiki', 'Valdo', 'Joy', 'Yowil', 'Stanley', 'Kezia', 'Hansel', 'Nathan C', 'Acha', 'Cornelius', 'Dicky', 'Andrew Wilaras', 'Andrew Wijaya'];
             this.generateWeeks(this.data.fixedSharingRotation.length); 
         }
         
-        // console.log(`END LOAD saved data`);  
         if (this.data.notificationsEnabled === undefined) {
             this.data.notificationsEnabled = false;
         }
@@ -134,7 +130,6 @@ const app = {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Find current fortnightly week (week 2 or 4)
         const currentWeek = this.getCurrentFortnightWeek(today);
         if (!currentWeek) return;
 
@@ -142,7 +137,6 @@ const app = {
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + 6);
 
-        // Check if today is within this fortnightly week
         if (today >= startDate && today <= endDate) {
             let turnType = null;
             
@@ -180,7 +174,6 @@ const app = {
             headerBtn.classList.add('has-turn');
         }
 
-        // Send browser notification once per day
         const todayStr = new Date().toISOString().split('T')[0];
         const lastNotified = localStorage.getItem('lastNotifiedDate');
         
@@ -304,18 +297,18 @@ const app = {
             const year = targetDate.getFullYear();
             const month = targetDate.getMonth();
             
-            // Week 1 (first Monday)
+            // Week 1 (first Tuesday)
             const week1 = new Date(year, month, 1);
             while (week1.getDay() !== 2) week1.setDate(week1.getDate() + 1);
             
-            // Week 3 (third Monday)
+            // Week 3 (third Tuesday)
             const week3 = new Date(year, month, 15);
             while (week3.getDay() !== 2) week3.setDate(week3.getDate() + 1);
             
             const today = new Date();
             today.setHours(0,0,0,0);
             
-            // Process Week 1
+            // Process Week 1 & 3
             if (week1 >= today && !this.weekExists(week1)) {
                 if (this.data.weeks.length === 0 || this.getLastWeekDate() < week1) {
                     this.createWeekWithFixedSharing(week1, rotationIndex);
@@ -325,7 +318,6 @@ const app = {
                 }
             }
             
-            // Process Week 3
             if (week3 >= today && !this.weekExists(week3) && added < count) {
                 if (this.data.weeks.length === 0 || this.getLastWeekDate() < week3) {
                     this.createWeekWithFixedSharing(week3, rotationIndex);
@@ -359,8 +351,8 @@ const app = {
             startDate: date.toISOString(),
             prep: prepPerson,
             share: sharingPerson,
-            fixedShare: true, // Flag to indicate sharing is fixed
-            rotationIndex: rotationIndex // Track position in rotation
+            fixedShare: true, 
+            rotationIndex: rotationIndex
         });
         console.log(`Created week on ${date.toISOString().split('T')[0]} - Prep: ${prepPerson}, Share: ${sharingPerson}`);  
         // Sort by date
@@ -369,33 +361,24 @@ const app = {
 
     getFixedSharingPerson(index) {
         if (this.data.fixedSharingRotation.length === 0) {
-            // Fallback to balanced rotation if not set
             return this.data.members[index % this.data.members.length];
         }
         return this.data.fixedSharingRotation[index % this.data.fixedSharingRotation.length];
     },
 
     getNextPrepPerson(excludePerson) {
-        // Get frequency counts up to current point
         const freq = this.getFrequencies();
-        console.log(`Exclude Person = ${excludePerson}\nFrequencies for prep selection:`, freq);   
-        // Sort by prep frequency (ascending), excluding the sharing person
         const candidates = this.data.members
             .filter(m => m !== excludePerson)
             .sort((a, b) => (freq[a]?.prep || 0) - (freq[b]?.prep || 0));
-        console.log(`Prep candidates (sorted):`, candidates);
-        console.log(`Result = ${candidates[0] || this.data.members.find(m => m !== excludePerson) || 'TBD'}`);  
         return candidates[0] || this.data.members.find(m => m !== excludePerson) || 'TBD';
     },
 
     setFixedSharingRotation(rotationArray) {
-        // Admin function to set the fixed rotation pattern
         this.data.fixedSharingRotation = rotationArray;
         this.saveData();
-        // alert('Fixed sharing rotation set. Regenerate weeks to apply.');
     },
 
-    // // Renamed from addWeek to avoid conflict with button handler
     // createSingleWeek(date) {
     //     const assignment = this.assignRoles(date);
     //     this.data.weeks.push({
@@ -416,9 +399,8 @@ const app = {
         });
     },
 
-    // This is the button handler - keep it separate
     addWeek() {
-        this.generateWeeks(1); // This calls generateWeeks, which uses createSingleWeek internally
+        this.generateWeeks(1);
     },
 
     createFortnightWeek(date) {
@@ -428,7 +410,7 @@ const app = {
             startDate: date.toISOString(),
             prep: assignment.prep,
             share: assignment.share,
-            fortnight: true // Mark as fortnightly week
+            fortnight: true
         });
     },
 
@@ -522,11 +504,7 @@ const app = {
 
     renderSchedule() {
         const container = document.getElementById('scheduleContainer');
-        
-        // Debug: Log what we have
-        console.log("Total weeks:", this.data.weeks.length);
-        console.log("Weeks data:", this.data.weeks);
-        
+            
         if (this.data.weeks.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -538,7 +516,6 @@ const app = {
             return;
         }
         
-        // Show all weeks (remove the fortnightly filter for now)
         const weeksToShow = this.data.weeks; 
 
         if (this.data.view === 'calendar') {
@@ -774,7 +751,6 @@ const app = {
         const addWeekBtn = document.getElementById('addWeekBtn');
         
         if (rosterView.classList.contains('active')) {
-            // Switch to Church Info
             rosterView.classList.remove('active');
             churchView.classList.add('active');
             toggleIcon.textContent = '📅';
@@ -782,10 +758,9 @@ const app = {
             addWeekBtn.style.display = 'none'; // Hide add week button in info view
             window.scrollTo(0, 0);
         } else {
-            // Switch back to Roster
             churchView.classList.remove('active');
             rosterView.classList.add('active');
-            toggleIcon.textContent = '⛪';
+            toggleIcon.textContent = '';
             toggleText.textContent = 'Church Info';
             addWeekBtn.style.display = 'inline-flex';
             window.scrollTo(0, 0);
@@ -808,7 +783,6 @@ const app = {
         shareSelect.innerHTML = '<option value="">-- Select --</option>' + 
             this.data.members.map(m => `<option value="${m}" ${m === week.share ? 'selected' : ''}>${m}</option>`).join('');
         
-        // Disable sharing edit if it's fixed and not allowed
         if (week.fixedShare && !this.data.allowSharingEdit) {
             shareSelect.disabled = true;
             shareSelect.title = "Sharing is in fixed rotation";
@@ -817,10 +791,8 @@ const app = {
             shareSelect.title = "";
         }
         
-        // Store current week ID in modal
         document.getElementById('editWeekModal').dataset.weekId = weekId;
         
-        // Show recalculate option
         const recalcOption = document.getElementById('recalculateOption');
         const weekIndex = this.data.weeks.indexOf(week);
         if (weekIndex < this.data.weeks.length - 1) {
@@ -846,7 +818,6 @@ const app = {
         const newShare = document.getElementById('editShare').value;
         const recalc = document.getElementById('recalcFuture').checked;
         
-        // Validation: Cannot be same person
         if (newPrep === newShare) {
             alert('Prep and Sharing cannot be the same person!');
             return;
@@ -864,7 +835,6 @@ const app = {
         
         this.saveData();
         
-        // Recalculate future weeks if requested
         if (recalc) {
             this.recalculateFromWeek(weekId);
         } else {
@@ -881,28 +851,22 @@ const app = {
             return;
         }
         
-        // Get current frequencies up to this point (including the edited week)
         const currentFreq = this.getFrequenciesUpToIndex(fromIndex);
         
-        // Recalculate remaining weeks
         const futureWeeks = this.data.weeks.slice(fromIndex + 1);
         
         futureWeeks.forEach((week, idx) => {
-            // If week has fixed sharing and wasn't manually edited, respect it
             if (week.fixedShare && !week.manuallyEdited) {
                 const sharingPerson = week.share;
-                // Find prep person with lowest current frequency who isn't the sharing person
                 const candidates = this.data.members
                     .filter(m => m !== sharingPerson)
                     .sort((a, b) => (currentFreq[a]?.prep || 0) - (currentFreq[b]?.prep || 0));
                 
                 week.prep = candidates[0] || this.data.members.find(m => m !== sharingPerson);
                 
-                // Update frequency tracker
                 currentFreq[week.prep] = currentFreq[week.prep] || {prep: 0, share: 0};
                 currentFreq[week.prep].prep++;
             } else {
-                // Both roles can be rebalanced
                 const totalFreqs = this.data.members.map(m => ({
                     name: m,
                     total: (currentFreq[m]?.prep || 0) + (currentFreq[m]?.share || 0)
@@ -931,7 +895,6 @@ const app = {
         this.render();
         this.closeWeekEdit();
         
-        // Show confirmation
         const recalculatedCount = futureWeeks.length;
         setTimeout(() => {
             alert(`Recalculated ${recalculatedCount} future weeks to balance frequencies.`);
@@ -951,7 +914,6 @@ const app = {
         return freq;
     },
 
-    // User Profile Functions
     openUserProfile() {
         this.renderUserNameSelect();
         this.loadNotificationSettings();
@@ -966,7 +928,6 @@ const app = {
         const select = document.getElementById('userNameSelect');
         const currentValue = this.data.userName || '';
         
-        // Clear and rebuild options
         select.innerHTML = '<option value="">-- Select your name --</option>';
         
         this.data.members.forEach(member => {
@@ -979,7 +940,6 @@ const app = {
             select.appendChild(option);
         });
         
-        // Update preview
         this.updateNamePreview(currentValue);
     },
 
@@ -1005,7 +965,6 @@ const app = {
         this.updateNamePreview(newName);
         this.updateUserDisplay();
         
-        // Re-check notifications with new name
         if (this.data.notificationsEnabled) {
             this.checkUpcomingNotifications();
         }
@@ -1018,7 +977,6 @@ const app = {
         if (this.data.userName) {
             display.textContent = `👤 ${this.data.userName}`;
             
-            // Check if upcoming turn to highlight button
             const upcoming = this.getUpcomingTurn();
             if (upcoming && upcoming.daysUntil <= 7) {
                 profileBtn.classList.add('has-turn');
@@ -1031,7 +989,6 @@ const app = {
         }
     },
 
-    // Notification Functions
     async toggleNotifications() {
         const enabled = document.getElementById('notificationMasterToggle').checked;
         
@@ -1044,7 +1001,6 @@ const app = {
                 return;
             }
             
-            // Validate user name is set
             if (!this.data.userName) {
                 alert('Please select your name first!');
                 document.getElementById('notificationMasterToggle').checked = false;
@@ -1055,7 +1011,6 @@ const app = {
         this.data.notificationsEnabled = enabled;
         this.saveData();
         
-        // Show/hide settings panel
         const settingsPanel = document.getElementById('notificationSettingsPanel');
         settingsPanel.style.display = enabled ? 'block' : 'none';
         
@@ -1072,7 +1027,6 @@ const app = {
         const isEnabled = document.getElementById(`notify${type.charAt(0).toUpperCase() + type.slice(1)}Toggle`).checked;
         this.data.notificationSettings[`notify${type.charAt(0).toUpperCase() + type.slice(1)}`] = isEnabled;
         
-        // Show/hide timing container
         const container = document.getElementById(`${type}TimingContainer`);
         container.style.display = isEnabled ? 'block' : 'none';
         container.style.opacity = isEnabled ? '1' : '0.5';
@@ -1085,7 +1039,6 @@ const app = {
         this.data.notificationSettings[`${type}Notice`] = minutes;
         this.saveData();
         
-        // Preview the timing
         const days = Math.floor(minutes / 1440);
         const hours = Math.floor((minutes % 1440) / 60);
         const mins = minutes % 60;
@@ -1139,21 +1092,16 @@ const app = {
         const masterToggle = document.getElementById('notificationMasterToggle');
         const settingsPanel = document.getElementById('notificationSettingsPanel');
         
-        // Set master toggle
         masterToggle.checked = this.data.notificationsEnabled;
         
-        // Show/hide settings panel
         settingsPanel.style.display = this.data.notificationsEnabled ? 'block' : 'none';
         
-        // Set notification type toggles
         document.getElementById('notifyPrepToggle').checked = settings.notifyPrep !== false;
         document.getElementById('notifyShareToggle').checked = settings.notifyShare !== false;
         
-        // Set timing dropdowns
         document.getElementById('prepNoticeSelect').value = settings.prepNotice || 1440;
         document.getElementById('shareNoticeSelect').value = settings.shareNotice || 1440;
         
-        // Show/hide timing containers based on toggles
         document.getElementById('prepTimingContainer').style.display = 
             settings.notifyPrep !== false ? 'block' : 'none';
         document.getElementById('shareTimingContainer').style.display = 
@@ -1162,7 +1110,6 @@ const app = {
         this.updateNotificationStatus(this.data.notificationsEnabled ? 'enabled' : 'disabled');
     },
 
-    // Core Notification Logic
     checkUpcomingNotifications() {
         if (!this.data.userName || !this.data.notificationsEnabled) return;
         
@@ -1174,18 +1121,15 @@ const app = {
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekEnd.getDate() + 6);
             
-            // Check if week is in the future
-            if (weekStart <= now) return; // Skip past/current weeks
+            if (weekStart <= now) return;
             
             const msUntil = weekStart - now;
             const minutesUntil = Math.floor(msUntil / (1000 * 60));
             
-            // Check Food Prep notification
             if (settings.notifyPrep !== false && week.prep === this.data.userName) {
                 const noticeMinutes = settings.prepNotice || 1440;
                 
                 if (minutesUntil <= noticeMinutes && minutesUntil > 0) {
-                    // Check if we already notified for this week
                     if (this.data.lastNotified?.prep !== week.id) {
                         this.sendTurnNotification('prep', week, minutesUntil);
                         this.data.lastNotified = this.data.lastNotified || {};
@@ -1215,7 +1159,6 @@ const app = {
         const typeLabel = type === 'prep' ? 'FOOD PREP' : 'SHARING';
         const typeEmoji = type === 'prep' ? '🍳' : '🤝';
         
-        // Format time until
         let timeStr;
         if (minutesUntil >= 1440) {
             const days = Math.round(minutesUntil / 1440);
@@ -1230,10 +1173,8 @@ const app = {
         const title = `Your Turn in ${timeStr}!`;
         const body = `${typeEmoji} Hi ${this.data.userName}! You have ${typeLabel} duty starting ${new Date(week.startDate).toLocaleDateString()}`;
         
-        // Browser notification
         this.showBrowserNotification(title, body);
         
-        // In-app banner
         this.showInAppBanner(type, timeStr, typeLabel);
     },
 
@@ -1260,7 +1201,6 @@ const app = {
         message.innerHTML = `${type === 'prep' ? '🍳' : '🤝'} <strong>${timeStr} until your ${typeLabel} duty!</strong> Get ready!`;
         headerBtn.classList.add('has-turn');
         
-        // Auto-hide after 10 seconds
         setTimeout(() => {
             banner.classList.remove('show');
         }, 10000);
@@ -1281,7 +1221,6 @@ const app = {
             share: 'Someone Else'
         };
         
-        // Show both types for testing
         if (this.data.notificationSettings.notifyPrep !== false) {
             this.sendTurnNotification('prep', testWeek, parseInt(prepTime));
         }

@@ -18,7 +18,7 @@
 
     <link rel="stylesheet" href="styles.css">
 </head>
-<script>
+<!-- <script>
   // GitHub Pages SPA redirect handling
   (function(){
     var redirect = sessionStorage.redirect;
@@ -42,7 +42,7 @@
       });
     }
   }
-</script>
+</script> -->
 <body>
 
     <!-- Turn Notification Banner -->
@@ -219,6 +219,43 @@
                 <input type="password" id="signupPassword" placeholder="Password" class="form-input">
                 <button onclick="authApp.signup()" class="btn btn-primary">Create Account</button>
                 <p>Already have an account? <a href="#" onclick="authApp.showLogin()">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal (new) -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">👤 My Profile</div>
+                <button class="close-btn" onclick="app.closeProfile()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="profileUsername" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="profileFullName" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <textarea id="profileBio" class="form-input" rows="4" placeholder="Tell us about yourself..."></textarea>
+                    <div style="text-align: right; font-size: 0.75rem; color: var(--text-light); margin-top: 0.25rem;">
+                        <span id="bioCharCount">0</span>/500
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="profileEmail" class="form-input" readonly style="background: var(--bg);">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn" onclick="app.closeProfile()" style="flex: 1;">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.saveProfile()" style="flex: 2;">Save Profile</button>
+                </div>
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+                <button class="btn" onclick="authApp.logout()" style="width: 100%; background: var(--danger); color: white;">Log Out</button>
             </div>
         </div>
     </div>

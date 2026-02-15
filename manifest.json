@@ -1,7 +1,7 @@
 {
-  "name": "FoodShare Roster",
+  "name": "KC GROW FoodShare",
   "short_name": "FoodShare",
-  "description": "Weekly Food Prep & Sharing Roster Management",
+  "description": "Fortnightly Food Prep & Sharing Roster Management",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",

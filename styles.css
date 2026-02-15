@@ -82,7 +82,13 @@ body {
     display: flex;
     gap: 12px;
     align-items: center;
+    flex-wrap: wrap;
 }
+
+.header-controls > * {
+    flex: 0 1 auto;
+}
+
 
 .user-profile-btn {
     background: transparent;
@@ -726,7 +732,19 @@ input:checked + .slider:before {
     
     .header-controls {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .header-controls > * {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 120px;
+    }
+
+    @media (max-width: 400px) {
+        .header-controls > * {
+            flex: 1 1 100%;
+        }
     }
     
     .panel-body {

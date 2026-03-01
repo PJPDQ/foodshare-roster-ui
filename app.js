@@ -285,7 +285,8 @@ const app = {
     //     this.render();
     // },
     generateWeeks(count = 1) {
-        let targetDate = new Date();
+        // const today = new Date("2026-02-09");
+        let targetDate = new Date("2026-02-01");//new Date();
         targetDate.setDate(1);
         targetDate.setHours(0, 0, 0, 0);
         
@@ -305,7 +306,7 @@ const app = {
             const week3 = new Date(year, month, 15);
             while (week3.getDay() !== 2) week3.setDate(week3.getDate() + 1);
             
-            const today = new Date();
+            const today = new Date("2026-02-09");//new Date();
             today.setHours(0,0,0,0);
             
             // Process Week 1 & 3

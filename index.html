@@ -46,7 +46,6 @@
 </script> -->
 <body>
 
-    <!-- Turn Notification Banner -->
     <div id="turnBanner" class="notification-banner">
         <span id="turnMessage"></span>
         <button onclick="this.parentElement.classList.remove('show')" style="margin-left: 1rem; background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer;">Dismiss</button>
@@ -72,10 +71,8 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <div id="rosterView" class="view-section active">
         <div class="main-container">
-            <!-- Left Panel: Calendar/List View (75%) -->
             <div class="panel" style="grid-column: 1;">
                 <div class="panel-header">
                     <div class="panel-title">
@@ -96,7 +93,6 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Statistics (25%) -->
             <div class="panel" style="grid-column: 2;">
                 <div class="panel-header">
                     <div class="panel-title">Statistics</div>
@@ -114,15 +110,12 @@
 
     <div id="churchInfoView" class="view-section">
         <div class="church-info-container">
-            <!-- Welcome Section -->
             <div class="welcome-section">
                 <div class="welcome-title">WELCOME<br>HOME</div>
                 <div class="welcome-subtitle">Praise the Lord, my soul; all my inmost being, praise his holy name. (Psalm 103:1)</div>
             </div>
 
-            <!-- Info Cards Grid -->
             <div class="info-grid">
-                <!-- Sunday Service Card -->
                 <div class="info-card">
                     <div class="info-card-title coral">Sunday Service</div>
                     
@@ -142,7 +135,6 @@
                     </div>
                 </div>
 
-                <!-- Upper Room Card -->
                 <div class="info-card">
                     <div class="info-card-title mauve">Upper Room</div>
                     
@@ -163,7 +155,6 @@
                     </div>
                 </div>
 
-                <!-- Kingdom Communities Card -->
                 <div class="info-card">
                     <div class="info-card-title blue">Kingdom Communities</div>
                     
@@ -183,7 +174,6 @@
                 </div>
             </div>
 
-            <!-- Contact Section -->
             <div class="contact-card">
                 <h2>Contact Us</h2>
                 <div class="contact-details">
@@ -199,7 +189,6 @@
         <div class="auth-card">
             <h2>⛪ FoodShare Roster</h2>
             
-            <!-- Login Form -->
             <div id="loginForm">
                 <h3>Sign In</h3>
                 <input type="email" id="loginEmail" placeholder="Email" class="form-input">
@@ -208,7 +197,6 @@
                 <p>Don't have an account? <a href="#" onclick="authApp.showSignup()">Sign up</a></p>
             </div>
             
-            <!-- Signup Form -->
             <div id="signupForm" style="display: none;">
                 <h3>Sign Up</h3>
                 <input type="text" id="signupName" placeholder="Full Name" class="form-input">
@@ -276,7 +264,6 @@
                     </div>
                 </div>
 
-                <!-- Master Notification Toggle -->
                 <div class="form-group">
                     <div class="toggle-switch" style="background: linear-gradient(135deg, var(--bg), #f9fafb); border: 2px solid var(--border);">
                         <div>
@@ -291,12 +278,10 @@
                     <p id="notificationStatus" style="font-size: 0.875rem; margin-top: 0.75rem; font-weight: 600;"></p>
                 </div>
 
-                <!-- Notification Settings (shown when enabled) -->
                 <div id="notificationSettingsPanel" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
                     
                     <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text);">Customize Alerts</h3>
                     
-                    <!-- Food Prep Settings -->
                     <div class="notification-type-block" style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                             <span style="font-weight: 700; color: #1e40af;">Food Prep</span>
@@ -322,7 +307,6 @@
                         </div>
                     </div>
 
-                    <!-- Sharing Settings -->
                     <div class="notification-type-block" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                             <span style="font-weight: 700; color: #065f46;">Sharing</span>
@@ -348,13 +332,11 @@
                         </div>
                     </div>
 
-                    <!-- Test Notification -->
                     <button class="btn btn-primary" onclick="app.sendTestNotification()" style="width: 100%; margin-top: 0.5rem;">
                         Send Test Notification
                     </button>
                 </div>
 
-                <!-- Info Box -->
                 <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem;">
                     <strong style="color: #92400e; font-size: 0.875rem;">How it works:</strong>
                     <ul style="margin-top: 0.5rem; margin-left: 1.25rem; font-size: 0.875rem; color: #92400e; line-height: 1.6;">
@@ -394,8 +376,6 @@
             </div>
         </div>
     </div>
-
-    <div class="model" id="scheduleContainer"></div>
 
     <div class="modal" id="editWeekModal">
         <div class="modal-content">

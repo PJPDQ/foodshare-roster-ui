@@ -1,0 +1,331 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+.guide-wrap {
+font-family: 'DM Sans', sans-serif;
+max-width: 720px;
+margin: 0 auto;
+padding: 2rem 1.5rem 3rem;
+color: var(--color-text-primary);
+}
+
+.guide-header {
+text-align: center;
+margin-bottom: 2.5rem;
+}
+
+.guide-badge {
+display: inline-block;
+font-size: 11px;
+font-weight: 500;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(--color-text-secondary);
+border: 0.5px solid var(--color-border-secondary);
+padding: 4px 14px;
+border-radius: 100px;
+margin-bottom: 1rem;
+}
+
+.guide-title {
+font-family: 'Instrument Serif', serif;
+font-size: 32px;
+font-weight: 400;
+margin: 0 0 0.5rem;
+line-height: 1.2;
+}
+
+.guide-subtitle {
+font-size: 15px;
+color: var(--color-text-secondary);
+margin: 0;
+font-weight: 300;
+}
+
+.progress-bar-wrap {
+margin-bottom: 2rem;
+}
+
+.progress-meta {
+display: flex;
+justify-content: space-between;
+font-size: 12px;
+color: var(--color-text-secondary);
+margin-bottom: 8px;
+}
+
+.progress-track {
+height: 4px;
+background: var(--color-background-secondary);
+border-radius: 100px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+background: var(--color-text-primary);
+border-radius: 100px;
+transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-dots {
+display: flex;
+justify-content: center;
+gap: 8px;
+margin-bottom: 2rem;
+flex-wrap: wrap;
+}
+
+.dot {
+width: 28px;
+height: 28px;
+border-radius: 50%;
+border: 0.5px solid var(--color-border-secondary);
+background: transparent;
+font-size: 11px;
+font-weight: 500;
+color: var(--color-text-secondary);
+cursor: pointer;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+}
+
+.dot.done {
+background: var(--color-text-primary);
+border-color: var(--color-text-primary);
+color: var(--color-background-primary);
+}
+
+.dot.done::after {
+content: '✓';
+font-size: 12px;
+}
+
+.dot.active {
+border: 2px solid var(--color-text-primary);
+color: var(--color-text-primary);
+font-weight: 500;
+}
+
+.step-card {
+background: var(--color-background-primary);
+border: 0.5px solid var(--color-border-tertiary);
+border-radius: var(--border-radius-lg);
+padding: 2rem 2rem 1.5rem;
+margin-bottom: 1.25rem;
+display: none;
+animation: fadeUp 0.3s ease;
+}
+
+.step-card.active {
+display: block;
+}
+
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.step-number-row {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 1rem;
+}
+
+.step-num-badge {
+width: 36px;
+height: 36px;
+border-radius: 50%;
+background: var(--color-background-secondary);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+font-weight: 500;
+flex-shrink: 0;
+color: var(--color-text-secondary);
+}
+
+.step-title-text {
+font-family: 'Instrument Serif', serif;
+font-size: 20px;
+font-weight: 400;
+margin: 0;
+line-height: 1.3;
+}
+
+.step-divider {
+height: 0.5px;
+background: var(--color-border-tertiary);
+margin: 1rem 0;
+}
+
+.step-desc {
+font-size: 15px;
+line-height: 1.7;
+color: var(--color-text-secondary);
+margin: 0 0 1rem;
+font-weight: 300;
+}
+
+.tip-box {
+background: var(--color-background-secondary);
+border-left: 2.5px solid var(--color-border-primary);
+border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+padding: 0.75rem 1rem;
+font-size: 13px;
+color: var(--color-text-secondary);
+margin-bottom: 1rem;
+line-height: 1.6;
+}
+
+.tip-label {
+font-size: 10px;
+font-weight: 500;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: var(--color-text-tertiary);
+margin-bottom: 3px;
+}
+
+.checklist {
+list-style: none;
+padding: 0;
+margin: 0 0 1rem;
+}
+
+.checklist li {
+display: flex;
+align-items: flex-start;
+gap: 10px;
+font-size: 14px;
+line-height: 1.6;
+color: var(--color-text-secondary);
+margin-bottom: 8px;
+cursor: pointer;
+user-select: none;
+}
+
+.checklist li .cb {
+width: 18px;
+height: 18px;
+border: 0.5px solid var(--color-border-secondary);
+border-radius: 4px;
+flex-shrink: 0;
+margin-top: 2px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.15s;
+font-size: 12px;
+}
+
+.checklist li.checked .cb {
+background: var(--color-text-primary);
+border-color: var(--color-text-primary);
+color: var(--color-background-primary);
+}
+
+.checklist li.checked .cb::after { content: '✓'; }
+.checklist li.checked span { text-decoration: line-through; opacity: 0.5; }
+
+.card-footer {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding-top: 1rem;
+border-top: 0.5px solid var(--color-border-tertiary);
+}
+
+.btn {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 8px 18px;
+border-radius: var(--border-radius-md);
+font-size: 14px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.15s;
+border: 0.5px solid var(--color-border-secondary);
+background: transparent;
+color: var(--color-text-primary);
+font-family: 'DM Sans', sans-serif;
+}
+
+.btn:hover { background: var(--color-background-secondary); }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+background: var(--color-text-primary);
+color: var(--color-background-primary);
+border-color: var(--color-text-primary);
+}
+
+.btn-primary:hover { opacity: 0.85; background: var(--color-text-primary); }
+
+.btn:disabled {
+opacity: 0.3;
+cursor: not-allowed;
+}
+
+.mark-done-btn {
+font-size: 13px;
+color: var(--color-text-secondary);
+cursor: pointer;
+background: none;
+border: none;
+padding: 0;
+font-family: 'DM Sans', sans-serif;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.mark-done-btn:hover { color: var(--color-text-primary); }
+
+.completion-card {
+text-align: center;
+padding: 3rem 2rem;
+border: 0.5px solid var(--color-border-tertiary);
+border-radius: var(--border-radius-lg);
+display: none;
+animation: fadeUp 0.4s ease;
+}
+
+.completion-card.active { display: block; }
+
+.completion-icon {
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: var(--color-background-secondary);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 26px;
+margin: 0 auto 1.25rem;
+}
+
+.completion-title {
+font-family: 'Instrument Serif', serif;
+font-size: 26px;
+font-weight: 400;
+margin: 0 0 0.5rem;
+}
+
+.completion-sub {
+font-size: 14px;
+color: var(--color-text-secondary);
+margin: 0 0 1.5rem;
+font-weight: 300;
+}
+
+.step-counter {
+font-size: 13px;
+color: var(--color-text-secondary);
+font-weight: 400;
+}

@@ -17,6 +17,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%234f46e5' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E%F0%9F%8D%BD%3C/text%3E%3C/svg%3E">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ext_styles.css"> 
 </head>
 <!-- <script>
   // GitHub Pages SPA redirect handling
@@ -66,6 +67,7 @@
                 <button class="btn btn-icon" onclick="app.regenerateRoster()" title="Regenerate Roster">🔄</button>
                 <button class="btn" onclick="app.openSettings()">⚙️ Members</button>
                 <button class="btn btn-primary" onclick="app.addWeek()">+ Add Week</button>
+                <button class="btn btn-primary" onclick="app.toggleManual()">Change to Manual</button>
             </div>
         </div>
     </header>
@@ -86,11 +88,11 @@
                     </div>
                 </div>
                 <div class="panel-body" id="scheduleContainer">
-                    <div class="empty-state">
+                    <!-- <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
                         <h3>No Schedule Yet</h3>
                         <p>Add members and generate your first week to get started</p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -193,10 +195,6 @@
         </div>
     </div>
 
-    <footer class="footer">
-        <p>&copy; 2026 ROCK GROW-ing Brisbane.</p>
-    </footer>
-    <!-- Auth Container (shown when not logged in) -->
     <div id="authContainer" style="display: none;">
         <div class="auth-card">
             <h2>⛪ FoodShare Roster</h2>
@@ -223,7 +221,6 @@
         </div>
     </div>
 
-    <!-- Profile Modal (new) -->
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -398,7 +395,8 @@
         </div>
     </div>
 
-    <!-- Week Edit Modal -->
+    <div class="model" id="scheduleContainer"></div>
+
     <div class="modal" id="editWeekModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -441,6 +439,214 @@
         </div>
     </div>
 
+    <div id="manualView" class="guide-wrap view-section">
+        <h2 class="sr-only">Interactive step-by-step guide with 8 steps. Navigate forward and back, check off sub-tasks, and track your progress.</h2>
+
+        <div class="guide-header">
+            <div class="guide-badge">How-to guide</div>
+            <h1 class="guide-title">Your step-by-step guide</h1>
+            <p class="guide-subtitle">Follow along at your own pace — no experience needed.</p>
+        </div>
+
+        <div class="progress-bar-wrap">
+            <div class="progress-meta">
+            <span id="prog-label">Step 1 of 8</span>
+            <span id="prog-pct">0% complete</span>
+            </div>
+            <div class="progress-track">
+            <div class="progress-fill" id="prog-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="step-dots" id="dots-row"></div>
+
+        <div id="steps-container">
+
+            <div class="step-card active" data-step="0">
+            <div class="step-number-row">
+                <div class="step-num-badge">1</div>
+                <h2 class="step-title-text">Gather your materials</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">Before you begin, make sure you have everything you need within reach. A little preparation now saves a lot of back-and-forth later.</p>
+            <ul class="checklist">
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Item or tool one</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Item or tool two</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Item or tool three</span></li>
+            </ul>
+            <div class="tip-box">
+                <div class="tip-label">Tip</div>
+                Lay everything out in front of you before starting — it makes the process much smoother.
+            </div>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(0)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" disabled>← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="1">
+            <div class="step-number-row">
+                <div class="step-num-badge">2</div>
+                <h2 class="step-title-text">Set up your workspace</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">A clear and organised workspace helps you focus. Clear your table, ensure good lighting, and keep your materials in order.</p>
+            <div class="tip-box">
+                <div class="tip-label">Did you know?</div>
+                Studies show a tidy workspace reduces errors and makes tasks feel less overwhelming — even for beginners.
+            </div>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(1)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="2">
+            <div class="step-number-row">
+                <div class="step-num-badge">3</div>
+                <h2 class="step-title-text">Read the instructions first</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">Skim through all the steps before doing anything. This gives you a mental map of where you're headed, so nothing takes you by surprise.</p>
+            <ul class="checklist">
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Read all steps from start to finish</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Note any step that looks tricky</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Identify where help might be needed</span></li>
+            </ul>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(2)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="3">
+            <div class="step-number-row">
+                <div class="step-num-badge">4</div>
+                <h2 class="step-title-text">Begin the first action</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">Now it's time to get started! Take it slowly — there's no rush. Follow each instruction exactly as written before moving on to the next.</p>
+            <div class="tip-box">
+                <div class="tip-label">Reminder</div>
+                It's perfectly fine to re-read a step more than once. Take your time — accuracy matters more than speed.
+            </div>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(3)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="4">
+            <div class="step-number-row">
+                <div class="step-num-badge">5</div>
+                <h2 class="step-title-text">Check your work</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">Pause and review what you've done so far. Does everything look right? This is your chance to catch any small mistakes before continuing.</p>
+            <ul class="checklist">
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Everything looks as expected</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>No steps were skipped</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Ready to continue</span></li>
+            </ul>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(4)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="5">
+            <div class="step-number-row">
+                <div class="step-num-badge">6</div>
+                <h2 class="step-title-text">Continue with the next part</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">Great job getting this far! Keep going — you're building on each step you've already completed. The process becomes more familiar as you go.</p>
+            <div class="tip-box">
+                <div class="tip-label">Encouragement</div>
+                If something feels tricky, step away for a moment, then come back with fresh eyes. A short break often helps.
+            </div>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(5)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="6">
+            <div class="step-number-row">
+                <div class="step-num-badge">7</div>
+                <h2 class="step-title-text">Make final adjustments</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">You're nearly done. Now refine and tidy up — small adjustments here can make a big difference to the overall result.</p>
+            <ul class="checklist">
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Review all previous steps</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Make any needed corrections</span></li>
+                <li onclick="toggleCheck(this)"><span class="cb"></span><span>Confirm everything is in order</span></li>
+            </ul>
+            <div class="card-footer">
+                <button class="mark-done-btn" onclick="markDone(6)"><i class="ti ti-check" aria-hidden="true"></i> Mark complete</button>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="step-card" data-step="7">
+            <div class="step-number-row">
+                <div class="step-num-badge">8</div>
+                <h2 class="step-title-text">Wrap up and review</h2>
+            </div>
+            <div class="step-divider"></div>
+            <p class="step-desc">You've reached the final step! Do one last review to make sure everything is complete and correct. Then you're all done — well done for following through.</p>
+            <div class="tip-box">
+                <div class="tip-label">Final check</div>
+                Take a moment to appreciate what you've accomplished. Every step you completed brought you here.
+            </div>
+            <div class="card-footer">
+                <span class="step-counter"></span>
+                <div style="display:flex;gap:8px">
+                <button class="btn" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="finish()">Finish ✓</button>
+                </div>
+            </div>
+            </div>
+
+            <div class="completion-card" id="completion-card">
+            <div class="completion-icon">🎉</div>
+            <h2 class="completion-title">You're all done!</h2>
+            <p class="completion-sub">You've completed all 8 steps. Great work following through from start to finish.</p>
+            <button class="btn btn-primary" onclick="restart()" style="margin: 0 auto">Start over</button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 ROCK GROW-ing Brisbane.</p>
+    </footer>
+
+
+    <script type="module" src="auth-app.js"></script>
     <script src="app.js"></script>
+    <script src="ext_app.js"></script>
 </body>
 </html>

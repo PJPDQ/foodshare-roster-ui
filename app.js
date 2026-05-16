@@ -500,30 +500,126 @@ const app = {
         this.updateUserDisplay();
         this.renderSchedule();
         this.renderStats();
+        this.applySavedSectionStates();
         document.getElementById('weekCount').textContent = `(${this.data.weeks.length} weeks)`;
     },
 
+    applySavedSectionStates() {
+       // Restore collapse preferences
+        ['past', 'current', 'upcoming'].forEach(category => {
+            const isCollapsed = localStorage.getItem(`section-${category}-collapsed`) === 'true';
+            if (isCollapsed) {
+                const header = document.querySelector(`.week-section[data-category="${category}"] .week-section-header`);
+                if (header) {
+                    // Trigger collapse without animation on load
+                    const targetId = header.dataset.target;
+                    const content = document.getElementById(targetId);
+                    const toggle = header.querySelector('.week-section-toggle');
+                    
+                    content.classList.add('collapsed');
+                    toggle.classList.add('collapsed');
+                    header.classList.add('collapsed');
+                }
+            }
+        });
+    },
+
+    // renderSchedule() {
+    //     const container = document.getElementById('scheduleContainer');
+            
+    //     if (this.data.weeks.length === 0) {
+    //         container.innerHTML = `
+    //             <div class="empty-state">
+    //                 <div class="empty-state-icon">📋</div>
+    //                 <h3>No Schedule Yet</h3>
+    //                 <p>Add members and click "Add Week" to generate fortnightly schedule</p>
+    //             </div>
+    //         `;
+    //         return;
+    //     }
+        
+    //     const weeksToShow = this.data.weeks; 
+
+    //     if (this.data.view === 'calendar') {
+    //         container.innerHTML = `<div class="weeks-container">${weeksToShow.map(week => this.renderWeekCard(week)).join('')}</div>`;
+    //     } else {
+    //         container.innerHTML = this.renderListView();
+    //     }
+    // },
+
     renderSchedule() {
         const container = document.getElementById('scheduleContainer');
-            
+        
         if (this.data.weeks.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
                     <h3>No Schedule Yet</h3>
-                    <p>Add members and click "Add Week" to generate fortnightly schedule</p>
+                    <p>Add members and generate your first week to get started</p>
                 </div>
             `;
             return;
         }
         
-        const weeksToShow = this.data.weeks; 
-
-        if (this.data.view === 'calendar') {
-            container.innerHTML = `<div class="weeks-container">${weeksToShow.map(week => this.renderWeekCard(week)).join('')}</div>`;
-        } else {
-            container.innerHTML = this.renderListView();
+        // Categorize weeks
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const pastWeeks = [];
+        const currentWeeks = [];
+        const upcomingWeeks = [];
+        
+        this.data.weeks.forEach(week => {
+            const startDate = new Date(week.startDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 6);
+            
+            if (endDate < today) {
+                pastWeeks.push({ ...week, category: 'past' });
+            } else if (startDate <= today && endDate >= today) {
+                currentWeeks.push({ ...week, category: 'current' });
+            } else {
+                upcomingWeeks.push({ ...week, category: 'upcoming' });
+            }
+        });
+        
+        // Build HTML by sections
+        let html = '';
+        
+        // 1. Current Week Section (Always expanded, highlighted)
+        if (currentWeeks.length > 0) {
+            html += this.renderWeekSection('📅 Current Week', currentWeeks, 'current', false);
         }
+        
+        // 2. Upcoming Weeks Section (Always expanded)
+        if (upcomingWeeks.length > 0) {
+            html += this.renderWeekSection(
+                `Upcoming Weeks <span class="auto-collapse-hint">(next ${upcomingWeeks.length} weeks)</span>`, 
+                upcomingWeeks, 
+                'upcoming', 
+                false
+            );
+        }
+        
+        // 3. Past Weeks Section (Auto-collapsed if more than 2 weeks)
+        if (pastWeeks.length > 0) {
+            const autoCollapsed = pastWeeks.length > 2; // Auto-collapse if many past weeks
+            html += this.renderWeekSection(
+                `📚 Past Weeks <span class="auto-collapse-hint">(${pastWeeks.length} completed)</span>`, 
+                pastWeeks, 
+                'past', 
+                autoCollapsed
+            );
+        }
+        
+        container.innerHTML = `<div class="weeks-container">${html}</div>`;
+        
+        // Add click handlers after render
+        setTimeout(() => {
+            document.querySelectorAll('.week-section-header').forEach(header => {
+                header.addEventListener('click', (e) => this.toggleSection(e.currentTarget));
+            });
+        }, 0);
     },
 
     getWeekOfMonth(date) {
@@ -534,54 +630,234 @@ const app = {
         return Math.ceil((currentDay + dayOfWeek) / 7);
     },
 
-    renderWeekCard(week) {
+    renderWeekCard(week, category) {
         const date = new Date(week.startDate);
-        date.setDate(date.getDate() + 1);
         const endDate = new Date(date);
         endDate.setDate(endDate.getDate() + 6);
         
-        const weekNum = this.getWeekOfMonth(date);
-        const dateStr = `${date.toLocaleDateString()} - ${endDate.toLocaleDateString()} (Week ${weekNum} of month)`;
-        const isPast = new Date() > endDate;
-        const isCurrentWeek = new Date() >= date && new Date() <= endDate;
+        const dateStr = `${date.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+        const today = new Date();
+        const isPast = endDate < today;
+        const isCurrent = date <= today && endDate >= today;
         
-        const isMyPrep = this.data.userName && week.prep === this.data.userName && isCurrentWeek;
-        const isMyShare = this.data.userName && week.share === this.data.userName && isCurrentWeek;
-
+        // Determine styling
         let cardClass = 'week-card';
+        if (category === 'past' || isPast) cardClass += ' past-week';
+        if (category === 'current' || isCurrent) cardClass += ' current-week';
+        if (category === 'upcoming') cardClass += ' upcoming-week';
+        
+        // Check if it's user's turn
+        const isMyPrep = this.data.userName && week.prep === this.data.userName;
+        const isMyShare = this.data.userName && week.share === this.data.userName;
+        
         if (isMyPrep) cardClass += ' my-turn-prep';
         if (isMyShare) cardClass += ' my-turn-share';
-
+        
         return `
-            <div class="week-card ${isMyPrep ? 'my-turn-prep' : ''} ${isMyShare ? 'my-turn-share' : ''}">
-                ${(isMyPrep || isMyShare) ? `<div class="my-turn-badge">⭐ It's You!</div>` : ''}
+            <div class="${cardClass}" data-week-id="${week.id}">
+                ${(isMyPrep || isMyShare) && (isCurrent || !isPast) ? `<div class="my-turn-badge">⭐ It's You!</div>` : ''}
                 <div class="week-header">
                     <div>
-                        <div class="week-title">Week of ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                        <div class="week-title">
+                            ${isCurrent ? '▶️ ' : ''}Week of ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            ${week.manuallyEdited ? '<span style="font-size: 0.7rem; color: var(--warning); margin-left: 0.5rem;">✏️ Edited</span>' : ''}
+                        </div>
                         <div class="week-date">${dateStr}</div>
-                        ${week.manuallyEdited ? '<span style="font-size: 0.7rem; color: var(--warning); margin-left: 0.5rem;">Edited</span>' : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
                         ${!isPast ? `
                             <button class="btn-icon" onclick="app.openWeekEdit(${week.id})" style="background: var(--primary); color: white;" title="Edit">✏️</button>
                             <button class="btn-icon" onclick="app.removeWeek(${week.id})" style="background: transparent; color: var(--danger);">🗑️</button>
-                        ` : ''}
+                        ` : '<span style="font-size: 0.75rem; color: var(--text-light); background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">✓ Done</span>'}
                     </div>
                 </div>
                 <div class="week-assignments">
-                    <div class="assignment prep ${this.data.userName && week.prep === this.data.userName ? 'me' : ''}">
+                    <div class="assignment prep ${isMyPrep ? 'me' : ''}">
+                        <div class="assignment-icon">👨‍🍳</div>
                         <div>
                             <div class="assignment-role">Food Prep</div>
                             <div class="assignment-person">${week.prep}</div>
                         </div>
                     </div>
-                    <div class="assignment share ${this.data.userName && week.share === this.data.userName ? 'me' : ''}">
+                    <div class="assignment share ${isMyShare ? 'me' : ''}">
+                        <div class="assignment-icon">🤝</div>
                         <div>
                             <div class="assignment-role">Sharing</div>
                             <div class="assignment-person">${week.share}</div>
                         </div>
                     </div>
                 </div>
+            </div>
+        `;
+    },
+
+    toggleSection(header) {
+        const targetId = header.dataset.target;
+        const content = document.getElementById(targetId);
+        const toggle = header.querySelector('.week-section-toggle');
+        
+        // Toggle collapsed state
+        const isCollapsed = content.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            content.classList.remove('collapsed');
+            toggle.classList.remove('collapsed');
+            header.classList.remove('collapsed');
+            
+            // If expanding past section, re-render full cards
+            if (targetId === 'section-past') {
+                this.expandPastWeeks(content);
+            }
+        } else {
+            // Collapse
+            content.classList.add('collapsed');
+            toggle.classList.add('collapsed');
+            header.classList.add('collapsed');
+        }
+        
+        // Save preference
+        const category = header.closest('.week-section').dataset.category;
+        localStorage.setItem(`section-${category}-collapsed`, !isCollapsed);
+    },
+
+    expandPastWeeks(container) {
+        // Replace minimal cards with full cards
+        const minimalCards = container.querySelectorAll('.week-card.past-week.minimal');
+        minimalCards.forEach(card => {
+            const weekId = parseFloat(card.dataset.weekId);
+            const week = this.data.weeks.find(w => w.id === weekId);
+            if (week) {
+                const fullCard = this.renderWeekCard(week, 'past');
+                card.outerHTML = fullCard;
+            }
+        });
+        
+        // Hide summary
+        const summary = container.querySelector('.past-summary');
+        if (summary) summary.style.display = 'none';
+    },
+
+    // renderWeekCard(week) {
+    //     const date = new Date(week.startDate);
+    //     date.setDate(date.getDate() + 1);
+    //     const endDate = new Date(date);
+    //     endDate.setDate(endDate.getDate() + 6);
+        
+    //     const weekNum = this.getWeekOfMonth(date);
+    //     const dateStr = `${date.toLocaleDateString()} - ${endDate.toLocaleDateString()} (Week ${weekNum} of month)`;
+    //     const isPast = new Date() > endDate;
+    //     const isCurrentWeek = new Date() >= date && new Date() <= endDate;
+        
+    //     const isMyPrep = this.data.userName && week.prep === this.data.userName && isCurrentWeek;
+    //     const isMyShare = this.data.userName && week.share === this.data.userName && isCurrentWeek;
+
+    //     let cardClass = 'week-card';
+    //     if (isMyPrep) cardClass += ' my-turn-prep';
+    //     if (isMyShare) cardClass += ' my-turn-share';
+
+    //     return `
+    //         <div class="week-card ${isMyPrep ? 'my-turn-prep' : ''} ${isMyShare ? 'my-turn-share' : ''}">
+    //             ${(isMyPrep || isMyShare) ? `<div class="my-turn-badge">⭐ It's You!</div>` : ''}
+    //             <div class="week-header">
+    //                 <div>
+    //                     <div class="week-title">Week of ${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+    //                     <div class="week-date">${dateStr}</div>
+    //                     ${week.manuallyEdited ? '<span style="font-size: 0.7rem; color: var(--warning); margin-left: 0.5rem;">Edited</span>' : ''}
+    //                 </div>
+    //                 <div style="display: flex; gap: 0.5rem;">
+    //                     ${!isPast ? `
+    //                         <button class="btn-icon" onclick="app.openWeekEdit(${week.id})" style="background: var(--primary); color: white;" title="Edit">✏️</button>
+    //                         <button class="btn-icon" onclick="app.removeWeek(${week.id})" style="background: transparent; color: var(--danger);">🗑️</button>
+    //                     ` : ''}
+    //                 </div>
+    //             </div>
+    //             <div class="week-assignments">
+    //                 <div class="assignment prep ${this.data.userName && week.prep === this.data.userName ? 'me' : ''}">
+    //                     <div>
+    //                         <div class="assignment-role">Food Prep</div>
+    //                         <div class="assignment-person">${week.prep}</div>
+    //                     </div>
+    //                 </div>
+    //                 <div class="assignment share ${this.data.userName && week.share === this.data.userName ? 'me' : ''}">
+    //                     <div>
+    //                         <div class="assignment-role">Sharing</div>
+    //                         <div class="assignment-person">${week.share}</div>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     `;
+    // },
+
+    renderWeekSection(title, weeks, category, collapsed) {
+        const sectionId = `section-${category}`;
+        const toggleClass = collapsed ? 'collapsed' : '';
+        const contentClass = collapsed ? 'collapsed' : '';
+        
+        // Generate week cards
+        const weekCards = weeks.map(week => {
+            if (category === 'past' && collapsed) {
+                // Don't render full cards when collapsed (save DOM)
+                return this.renderMinimalWeekCard(week);
+            }
+            return this.renderWeekCard(week, category);
+        }).join('');
+        
+        // Summary for collapsed past weeks
+        const summary = category === 'past' ? this.renderPastSummary(weeks) : '';
+        
+        return `
+            <div class="week-section" data-category="${category}">
+                <div class="week-section-header ${toggleClass}" data-target="${sectionId}">
+                    <div class="week-section-title">
+                        ${title}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="week-section-count">${weeks.length} week${weeks.length !== 1 ? 's' : ''}</span>
+                        <span class="week-section-toggle ${toggleClass}">▼</span>
+                    </div>
+                </div>
+                <div id="${sectionId}" class="week-section-content ${contentClass}">
+                    ${summary}
+                    ${weekCards}
+                </div>
+            </div>
+        `;
+    },
+
+    renderMinimalWeekCard(week) {
+        // Ultra-compact version for collapsed past weeks
+        const date = new Date(week.startDate);
+        const endDate = new Date(date);
+        endDate.setDate(endDate.getDate() + 6);
+        
+        return `
+            <div class="week-card past-week minimal" data-week-id="${week.id}">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-light);">
+                        ${date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})} - ${endDate.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                    </div>
+                    <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
+                        <span style="color: #3b82f6; font-weight: 600;">👨‍🍳 ${week.prep}</span>
+                        <span style="color: #10b981; font-weight: 600;">🤝 ${week.share}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderPastSummary(weeks) {
+        // Quick stats when past section is collapsed
+        const totalPrep = [...new Set(weeks.map(w => w.prep))].length;
+        const totalShare = [...new Set(weeks.map(w => w.share))].length;
+        
+        return `
+            <div class="past-summary">
+                <strong>${weeks.length} weeks completed</strong> • 
+                ${totalPrep} people did food prep • 
+                ${totalShare} people did sharing
+                <br><em>Click arrow above to expand full history</em>
             </div>
         `;
     },
@@ -749,24 +1025,50 @@ const app = {
         const toggleBtn = document.getElementById('viewToggleBtn');
         const toggleIcon = document.getElementById('viewToggleIcon');
         const toggleText = document.getElementById('viewToggleText');
-        const addWeekBtn = document.getElementById('addWeekBtn');
+        // const addWeekBtn = document.getElementById('addWeekBtn');
         
         if (rosterView.classList.contains('active')) {
             rosterView.classList.remove('active');
             churchView.classList.add('active');
             toggleIcon.textContent = '📅';
             toggleText.textContent = 'Back to Roster';
-            addWeekBtn.style.display = 'none'; // Hide add week button in info view
+            // addWeekBtn.style.display = 'none'; // Hide add week button in info view
             window.scrollTo(0, 0);
         } else {
             churchView.classList.remove('active');
             rosterView.classList.add('active');
             toggleIcon.textContent = '';
             toggleText.textContent = 'Church Info';
-            addWeekBtn.style.display = 'inline-flex';
+            // addWeekBtn.style.display = 'inline-flex';
             window.scrollTo(0, 0);
         }
     },
+
+    toggleManual() {
+        const rosterView = document.getElementById('rosterView');
+        const churchView = document.getElementById('churchInfoView');
+        const toggleBtn = document.getElementById('viewToggleBtn');
+        const toggleIcon = document.getElementById('viewToggleIcon');
+        const toggleText = document.getElementById('viewToggleText');
+        const manualView = document.getElementById('manualView');
+        // const addWeekBtn = document.getElementById('addWeekBtn');
+        
+        if (rosterView.classList.contains('active')) {
+            rosterView.classList.remove('active');
+            churchView.classList.remove('active');
+            manualView.classList.add('active');
+            // addWeekBtn.style.display = 'none'; // Hide add week button in info view
+            window.scrollTo(0, 0);
+        } else {
+            manualView.classList.remove('active');
+            rosterView.classList.add('active');
+            toggleIcon.textContent = '';
+            toggleText.textContent = 'Church Info';
+            // addWeekBtn.style.display = 'inline-flex';
+            window.scrollTo(0, 0);
+        }
+    },
+    
 
 
     /* Edit Functionality */
@@ -1254,12 +1556,87 @@ const app = {
             }
         }
         return null;
+    },
+    openProfile() {
+        if (!auth.profile) return;
+        
+        document.getElementById('profileUsername').value = auth.profile.username || '';
+        document.getElementById('profileFullName').value = auth.profile.full_name || '';
+        document.getElementById('profileBio').value = auth.profile.bio || '';
+        document.getElementById('profileEmail').value = auth.user.email || '';
+        document.getElementById('bioCharCount').textContent = (auth.profile.bio || '').length;
+        
+        // Character counter
+        document.getElementById('profileBio').oninput = (e) => {
+            document.getElementById('bioCharCount').textContent = e.target.value.length;
+        };
+        
+        document.getElementById('profileModal').classList.add('active');
+    },
+
+    closeProfile() {
+        document.getElementById('profileModal').classList.remove('active');
+    },
+
+    async saveProfile() {
+        const updates = {
+            full_name: document.getElementById('profileFullName').value,
+            bio: document.getElementById('profileBio').value
+        };
+        
+        try {
+            await auth.updateProfile(updates);
+            this.closeProfile();
+            
+            // Show success notification
+            this.showNotification('Profile Updated', 'Your profile has been saved successfully!');
+        } catch (err) {
+            alert('Failed to save profile: ' + err.message);
+        }
+    },
+
+    initFromCloud() {
+        // Load weeks from Supabase instead of localStorage
+        const roster = dataService.currentRoster;
+        if (roster && roster.weeks) {
+            this.data.weeks = roster.weeks.map(w => ({
+                id: w.id,
+                startDate: w.start_date,
+                prep: w.prep_person,
+                share: w.share_person,
+                fixedShare: w.fixed_share,
+                rotationIndex: w.rotation_index
+            }));
+        }
+        
+        // Load members from church_members table
+        this.loadMembersFromCloud();
+        
+        this.render();
+    },
+
+    async loadMembersFromCloud() {
+        const members = await dataService.getMembers();
+        this.data.members = members.map(m => m.name);
+        this.render();
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     app.setFixedSharingRotation(['Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', 'Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
-    app.init();
+    // app.init();
+    async function init() {
+        // Initialize auth first
+        await app.init();
+        
+        // Listen for real-time updates
+        window.addEventListener('roster-updated', (e) => {
+            console.log('Real-time update:', e.detail);
+            app.refreshWeeks();
+        });
+    }
+
+    init();
 });
 
 document.getElementById('settingsModal').addEventListener('click', (e) => {

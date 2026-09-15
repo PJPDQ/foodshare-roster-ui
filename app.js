@@ -589,8 +589,12 @@ const app = {
                 autoCollapsed
             );
         }
-        
-        container.innerHTML = `<div class="weeks-container">${html}</div>`;
+        if (this.data.view === 'calendar') {
+            // container.innerHTML = `<div class="weeks-container">${weeksToShow.map(week => this.renderWeekCard(week)).join('')}</div>`;
+            container.innerHTML = `<div class="weeks-container">${html}</div>`;
+        } else {
+            container.innerHTML = this.renderListView();
+        }
         
         setTimeout(() => {
             document.querySelectorAll('.week-section-header').forEach(header => {

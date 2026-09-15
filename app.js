@@ -355,7 +355,7 @@ const app = {
             fixedShare: true, 
             rotationIndex: rotationIndex
         });
-        console.log(`Created week on ${date.toISOString().split('T')[0]} - Prep: ${prepPerson}, Share: ${sharingPerson}`);  
+        // console.log(`Created week on ${date.toISOString().split('T')[0]} - Prep: ${prepPerson}, Share: ${sharingPerson}`);  
         // Sort by date
         this.data.weeks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     },
@@ -605,14 +605,19 @@ const app = {
         if (pastWeeks.length > 0) {
             const autoCollapsed = pastWeeks.length > 2; // Auto-collapse if many past weeks
             html += this.renderWeekSection(
-                `📚 Past Weeks <span class="auto-collapse-hint">(${pastWeeks.length} completed)</span>`, 
+                `Past Weeks <span class="auto-collapse-hint">(${pastWeeks.length} completed)</span>`, 
                 pastWeeks, 
                 'past', 
                 autoCollapsed
             );
         }
         
-        container.innerHTML = `<div class="weeks-container">${html}</div>`;
+        if (this.data.view === 'calendar') {
+            // container.innerHTML = `<div class="weeks-container">${weeksToShow.map(week => this.renderWeekCard(week)).join('')}</div>`;
+            container.innerHTML = `<div class="weeks-container">${html}</div>`;
+        } else {
+            container.innerHTML = this.renderListView();
+        }
         
         // Add click handlers after render
         setTimeout(() => {

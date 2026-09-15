@@ -150,7 +150,6 @@ const app = {
     },
 
     getCurrentFortnightWeek(today) {
-        // Find the fortnightly week that contains today or is closest future
         return this.data.weeks.find(week => {
             const start = new Date(week.startDate);
             const end = new Date(start);
@@ -232,7 +231,6 @@ const app = {
     },
 
     // generateWeeks(count = 1) {
-    //     // Start from beginning of current month
     //     let targetDate = new Date();
     //     targetDate.setDate(1);
     //     targetDate.setHours(0, 0, 0, 0);
@@ -244,13 +242,11 @@ const app = {
     //         const year = targetDate.getFullYear();
     //         const month = targetDate.getMonth();
             
-    //         // Calculate Week 2 (days 8-14) - find Monday of this week
     //         const week2 = new Date(year, month, 8);
     //         while (week2.getDay() !== 1) { // 1 = Monday
     //             week2.setDate(week2.getDate() + 1);
     //         }
             
-    //         // Calculate Week 4 (days 22-28) - find Monday of this week  
     //         const week4 = new Date(year, month, 22);
     //         while (week4.getDay() !== 1) { // 1 = Monday
     //             week4.setDate(week4.getDate() + 1);
@@ -259,7 +255,6 @@ const app = {
     //         const today = new Date();
     //         today.setHours(0,0,0,0);
             
-    //         // Add Week 2 if it's today or future and not exists
     //         if (week2 >= today && !this.weekExists(week2)) {
     //             if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week2) {
     //                 this.createSingleWeek(week2); // Changed from addWeek to createSingleWeek
@@ -268,7 +263,6 @@ const app = {
     //             }
     //         }
             
-    //         // Add Week 4 if it's today or future and not exists
     //         if (week4 >= today && !this.weekExists(week4) && added < count) {
     //             if (this.data.weeks.length === 0 || new Date(this.data.weeks[this.data.weeks.length-1].startDate) < week4) {
     //                 this.createSingleWeek(week4); // Changed from addWeek to createSingleWeek
@@ -276,7 +270,6 @@ const app = {
     //             }
     //         }
             
-    //         // Move to next month
     //         targetDate.setMonth(targetDate.getMonth() + 1);
     //         monthsChecked++;
     //     }
@@ -285,7 +278,6 @@ const app = {
     //     this.render();
     // },
     generateWeeks(count = 1) {
-        // const today = new Date("2026-02-09");
         let targetDate = new Date("2026-02-01");//new Date();
         targetDate.setDate(1);
         targetDate.setHours(0, 0, 0, 0);
@@ -298,18 +290,15 @@ const app = {
             const year = targetDate.getFullYear();
             const month = targetDate.getMonth();
             
-            // Week 1 (first Tuesday)
             const week1 = new Date(year, month, 1);
             while (week1.getDay() !== 2) week1.setDate(week1.getDate() + 1);
             
-            // Week 3 (third Tuesday)
             const week3 = new Date(year, month, 15);
             while (week3.getDay() !== 2) week3.setDate(week3.getDate() + 1);
             
             const today = new Date("2026-02-09");//new Date();
             today.setHours(0,0,0,0);
             
-            // Process Week 1 & 3
             if (week1 >= today && !this.weekExists(week1)) {
                 if (this.data.weeks.length === 0 || this.getLastWeekDate() < week1) {
                     this.createWeekWithFixedSharing(week1, rotationIndex);
@@ -341,10 +330,8 @@ const app = {
     },
 
     createWeekWithFixedSharing(date, rotationIndex) {
-        // Get fixed sharing person from rotation
         const sharingPerson = this.getFixedSharingPerson(rotationIndex);
         
-        // Get prep person (lowest frequency, not the sharing person)
         const prepPerson = this.getNextPrepPerson(sharingPerson);
         
         this.data.weeks.push({
@@ -356,7 +343,6 @@ const app = {
             rotationIndex: rotationIndex
         });
         console.log(`Created week on ${date.toISOString().split('T')[0]} - Prep: ${prepPerson}, Share: ${sharingPerson}`);  
-        // Sort by date
         this.data.weeks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     },
 
@@ -388,7 +374,6 @@ const app = {
     //         prep: assignment.prep,
     //         share: assignment.share
     //     });
-    //     // Sort weeks by date
     //     this.data.weeks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     // },
 
@@ -505,13 +490,11 @@ const app = {
     },
 
     applySavedSectionStates() {
-       // Restore collapse preferences
         ['past', 'current', 'upcoming'].forEach(category => {
             const isCollapsed = localStorage.getItem(`section-${category}-collapsed`) === 'true';
             if (isCollapsed) {
                 const header = document.querySelector(`.week-section[data-category="${category}"] .week-section-header`);
                 if (header) {
-                    // Trigger collapse without animation on load
                     const targetId = header.dataset.target;
                     const content = document.getElementById(targetId);
                     const toggle = header.querySelector('.week-section-toggle');
@@ -561,7 +544,6 @@ const app = {
             return;
         }
         
-        // Categorize weeks
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -583,15 +565,12 @@ const app = {
             }
         });
         
-        // Build HTML by sections
         let html = '';
         
-        // 1. Current Week Section (Always expanded, highlighted)
         if (currentWeeks.length > 0) {
             html += this.renderWeekSection('📅 Current Week', currentWeeks, 'current', false);
         }
         
-        // 2. Upcoming Weeks Section (Always expanded)
         if (upcomingWeeks.length > 0) {
             html += this.renderWeekSection(
                 `Upcoming Weeks <span class="auto-collapse-hint">(next ${upcomingWeeks.length} weeks)</span>`, 
@@ -601,7 +580,6 @@ const app = {
             );
         }
         
-        // 3. Past Weeks Section (Auto-collapsed if more than 2 weeks)
         if (pastWeeks.length > 0) {
             const autoCollapsed = pastWeeks.length > 2; // Auto-collapse if many past weeks
             html += this.renderWeekSection(
@@ -614,7 +592,6 @@ const app = {
         
         container.innerHTML = `<div class="weeks-container">${html}</div>`;
         
-        // Add click handlers after render
         setTimeout(() => {
             document.querySelectorAll('.week-section-header').forEach(header => {
                 header.addEventListener('click', (e) => this.toggleSection(e.currentTarget));
@@ -640,13 +617,11 @@ const app = {
         const isPast = endDate < today;
         const isCurrent = date <= today && endDate >= today;
         
-        // Determine styling
         let cardClass = 'week-card';
         if (category === 'past' || isPast) cardClass += ' past-week';
         if (category === 'current' || isCurrent) cardClass += ' current-week';
         if (category === 'upcoming') cardClass += ' upcoming-week';
         
-        // Check if it's user's turn
         const isMyPrep = this.data.userName && week.prep === this.data.userName;
         const isMyShare = this.data.userName && week.share === this.data.userName;
         
@@ -696,33 +671,27 @@ const app = {
         const content = document.getElementById(targetId);
         const toggle = header.querySelector('.week-section-toggle');
         
-        // Toggle collapsed state
         const isCollapsed = content.classList.contains('collapsed');
         
         if (isCollapsed) {
-            // Expand
             content.classList.remove('collapsed');
             toggle.classList.remove('collapsed');
             header.classList.remove('collapsed');
             
-            // If expanding past section, re-render full cards
             if (targetId === 'section-past') {
                 this.expandPastWeeks(content);
             }
         } else {
-            // Collapse
             content.classList.add('collapsed');
             toggle.classList.add('collapsed');
             header.classList.add('collapsed');
         }
         
-        // Save preference
         const category = header.closest('.week-section').dataset.category;
         localStorage.setItem(`section-${category}-collapsed`, !isCollapsed);
     },
 
     expandPastWeeks(container) {
-        // Replace minimal cards with full cards
         const minimalCards = container.querySelectorAll('.week-card.past-week.minimal');
         minimalCards.forEach(card => {
             const weekId = parseFloat(card.dataset.weekId);
@@ -733,7 +702,6 @@ const app = {
             }
         });
         
-        // Hide summary
         const summary = container.querySelector('.past-summary');
         if (summary) summary.style.display = 'none';
     },
@@ -795,16 +763,13 @@ const app = {
         const toggleClass = collapsed ? 'collapsed' : '';
         const contentClass = collapsed ? 'collapsed' : '';
         
-        // Generate week cards
         const weekCards = weeks.map(week => {
             if (category === 'past' && collapsed) {
-                // Don't render full cards when collapsed (save DOM)
                 return this.renderMinimalWeekCard(week);
             }
             return this.renderWeekCard(week, category);
         }).join('');
         
-        // Summary for collapsed past weeks
         const summary = category === 'past' ? this.renderPastSummary(weeks) : '';
         
         return `
@@ -827,7 +792,6 @@ const app = {
     },
 
     renderMinimalWeekCard(week) {
-        // Ultra-compact version for collapsed past weeks
         const date = new Date(week.startDate);
         const endDate = new Date(date);
         endDate.setDate(endDate.getDate() + 6);
@@ -848,7 +812,6 @@ const app = {
     },
 
     renderPastSummary(weeks) {
-        // Quick stats when past section is collapsed
         const totalPrep = [...new Set(weeks.map(w => w.prep))].length;
         const totalShare = [...new Set(weeks.map(w => w.share))].length;
         
@@ -1032,14 +995,12 @@ const app = {
             churchView.classList.add('active');
             toggleIcon.textContent = '📅';
             toggleText.textContent = 'Back to Roster';
-            // addWeekBtn.style.display = 'none'; // Hide add week button in info view
             window.scrollTo(0, 0);
         } else {
             churchView.classList.remove('active');
             rosterView.classList.add('active');
             toggleIcon.textContent = '';
             toggleText.textContent = 'Church Info';
-            // addWeekBtn.style.display = 'inline-flex';
             window.scrollTo(0, 0);
         }
     },
@@ -1057,7 +1018,7 @@ const app = {
             rosterView.classList.remove('active');
             churchView.classList.remove('active');
             manualView.classList.add('active');
-            // addWeekBtn.style.display = 'none'; // Hide add week button in info view
+            // addWeekBtn.style.display = 'none';
             window.scrollTo(0, 0);
         } else {
             manualView.classList.remove('active');
@@ -1079,7 +1040,6 @@ const app = {
         const prepSelect = document.getElementById('editPrep');
         const shareSelect = document.getElementById('editShare');
         
-        // Populate dropdowns
         prepSelect.innerHTML = '<option value="">-- Select --</option>' + 
             this.data.members.map(m => `<option value="${m}" ${m === week.prep ? 'selected' : ''}>${m}</option>`).join('');
         
@@ -1126,14 +1086,12 @@ const app = {
             return;
         }
         
-        // Update this week
         week.prep = newPrep;
-        if (newShare) week.share = newShare; // Only update if changed
+        if (newShare) week.share = newShare;
         
-        // Mark as manually edited (removes fixed flag if sharing changed)
         week.manuallyEdited = true;
         if (week.share !== this.getFixedSharingPerson(week.rotationIndex)) {
-            week.fixedShare = false; // Break from fixed rotation
+            week.fixedShare = false;
         }
         
         this.saveData();
@@ -1175,11 +1133,9 @@ const app = {
                     total: (currentFreq[m]?.prep || 0) + (currentFreq[m]?.share || 0)
                 })).sort((a, b) => a.total - b.total);
                 
-                // Assign prep to lowest, share to second lowest (different people)
                 const prepPerson = totalFreqs[0].name;
                 let sharePerson = totalFreqs[1]?.name || totalFreqs[0].name;
                 
-                // If only one person available, force different person
                 if (prepPerson === sharePerson && this.data.members.length > 1) {
                     sharePerson = totalFreqs.find(p => p.name !== prepPerson)?.name || sharePerson;
                 }
@@ -1296,7 +1252,6 @@ const app = {
         const enabled = document.getElementById('notificationMasterToggle').checked;
         
         if (enabled) {
-            // Request permission first
             const permission = await this.requestNotificationPermission();
             if (!permission) {
                 document.getElementById('notificationMasterToggle').checked = false;
@@ -1442,7 +1397,6 @@ const app = {
                 }
             }
             
-            // Check Sharing notification
             if (settings.notifyShare !== false && week.share === this.data.userName) {
                 const noticeMinutes = settings.shareNotice || 1440;
                 
@@ -1519,7 +1473,7 @@ const app = {
         const shareTime = document.getElementById('shareNoticeSelect').value;
         
         const testWeek = {
-            startDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+            startDate: new Date(Date.now() + 86400000).toISOString(), 
             prep: this.data.userName,
             share: 'Someone Else'
         };
@@ -1566,7 +1520,6 @@ const app = {
         document.getElementById('profileEmail').value = auth.user.email || '';
         document.getElementById('bioCharCount').textContent = (auth.profile.bio || '').length;
         
-        // Character counter
         document.getElementById('profileBio').oninput = (e) => {
             document.getElementById('bioCharCount').textContent = e.target.value.length;
         };
@@ -1588,7 +1541,6 @@ const app = {
             await auth.updateProfile(updates);
             this.closeProfile();
             
-            // Show success notification
             this.showNotification('Profile Updated', 'Your profile has been saved successfully!');
         } catch (err) {
             alert('Failed to save profile: ' + err.message);
@@ -1596,7 +1548,6 @@ const app = {
     },
 
     initFromCloud() {
-        // Load weeks from Supabase instead of localStorage
         const roster = dataService.currentRoster;
         if (roster && roster.weeks) {
             this.data.weeks = roster.weeks.map(w => ({
@@ -1609,7 +1560,6 @@ const app = {
             }));
         }
         
-        // Load members from church_members table
         this.loadMembersFromCloud();
         
         this.render();
@@ -1626,10 +1576,8 @@ document.addEventListener('DOMContentLoaded', () => {
     app.setFixedSharingRotation(['Nathan C', 'Acha', 'Cornelius', 'Yowil', 'Kezia', 'Joy', 'Hansel', 'Stanley', 'Dicky', 'Andrew Wijaya', 'Acha', 'Kiki', 'Cornelius', 'Stanley', 'Dicky', 'Nathan C', 'Kezia', 'Yowil', 'Valdo'])
     // app.init();
     async function init() {
-        // Initialize auth first
         await app.init();
         
-        // Listen for real-time updates
         window.addEventListener('roster-updated', (e) => {
             console.log('Real-time update:', e.detail);
             app.refreshWeeks();

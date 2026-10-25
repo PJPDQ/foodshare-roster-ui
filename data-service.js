@@ -16,7 +16,6 @@ export const dataService = {
             .single();
         
         if (error && error.code === 'PGRST116') {
-            // No roster exists, create one
             const { data: newRoster, error: createError } = await supabase
                 .from('rosters')
                 .insert({

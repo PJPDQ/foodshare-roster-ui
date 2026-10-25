@@ -1,2 +1,4 @@
 .env
 PROD_*
+app.js
+ext_app.js
